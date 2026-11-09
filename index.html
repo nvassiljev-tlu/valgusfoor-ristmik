@@ -1,0 +1,854 @@
+<!doctype html>
+<html lang="et">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Valgusfoor</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 20px;
+        background-color: #222;
+        color: #eee;
+      }
+      .container {
+        max-width: 900px;
+        margin: 0 auto;
+      }
+      h1 {
+        margin: 0 0 5px;
+      }
+      h2 {
+        margin: 0 0 5px;
+        font-size: 20px;
+      }
+      h3 {
+        margin: 0 0 8px;
+        font-size: 16px;
+        color: #00ffcc;
+      }
+      .hint {
+        font-size: 13px;
+        color: #aaa;
+        margin: 6px 0 0;
+      }
+      .statusbar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px 25px;
+        background: #333;
+        padding: 12px 15px;
+        border-radius: 10px;
+        margin: 15px 0;
+        font-size: 14px;
+      }
+      .ok {
+        color: #28a745;
+        font-weight: bold;
+      }
+      .warn {
+        color: #ff9800;
+        font-weight: bold;
+      }
+      .error {
+        color: #ff4d4d;
+        font-weight: bold;
+      }
+
+      .junctions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+      }
+      .junction {
+        flex: 1 1 300px;
+        background: #2a2a2a;
+        border: 2px dashed #555;
+        border-radius: 10px;
+        padding: 15px;
+        text-align: center;
+      }
+      .junction.physical {
+        border-color: #007bff;
+      }
+      .junction.physical h2 {
+        color: #4da3ff;
+      }
+      .lights-container {
+        display: flex;
+        justify-content: center;
+        gap: 40px;
+        margin-top: 15px;
+      }
+      .light-box {
+        background: #111;
+        padding: 15px;
+        border-radius: 20px;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        gap: 10px;
+        border: 3px solid #444;
+      }
+      .light-label {
+        font-size: 12px;
+        color: #aaa;
+        text-transform: uppercase;
+      }
+      .light {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: #333;
+        opacity: 0.2;
+        margin: 0 auto;
+        transition: opacity 0.1s;
+      }
+      .light.red.active {
+        background: #ff0000;
+        box-shadow: 0 0 20px #ff0000;
+        opacity: 1;
+      }
+      .light.yellow.active {
+        background: #ffcc00;
+        box-shadow: 0 0 20px #ffcc00;
+        opacity: 1;
+      }
+      .light.green.active {
+        background: #00ff00;
+        box-shadow: 0 0 20px #00ff00;
+        opacity: 1;
+      }
+      .phase {
+        margin: 15px 0 0;
+        font-weight: bold;
+        min-height: 20px;
+      }
+      .left {
+        margin: 3px 0 0;
+        font-size: 13px;
+        color: #aaa;
+        min-height: 16px;
+      }
+
+      .panel {
+        background: #333;
+        border-radius: 10px;
+        padding: 15px;
+        margin-top: 15px;
+      }
+      .step {
+        padding: 12px 0;
+        border-top: 1px solid #444;
+      }
+
+      button {
+        padding: 10px 18px;
+        margin: 3px 3px 3px 0;
+        font-size: 15px;
+        cursor: pointer;
+        border-radius: 5px;
+        border: 2px solid transparent;
+        background-color: #007bff;
+        color: white;
+      }
+      button:active {
+        background-color: #0056b3;
+      }
+      button:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+      }
+      button.selected {
+        background-color: #00a37a;
+        border-color: #00ffcc;
+      }
+      .connect-btn {
+        background-color: #ff9800;
+        font-weight: bold;
+      }
+      .apply-btn {
+        background-color: #28a745;
+      }
+      .big-btn {
+        background-color: #28a745;
+        font-size: 20px;
+        padding: 15px 30px;
+        width: 100%;
+      }
+      .big-btn:active {
+        background-color: #1e7e34;
+      }
+      label {
+        display: inline-block;
+        margin-top: 8px;
+      }
+      input {
+        padding: 6px;
+        font-size: 16px;
+        width: 70px;
+        text-align: center;
+        margin-left: 8px;
+      }
+      #log {
+        background: #111;
+        padding: 10px;
+        border-radius: 5px;
+        font-size: 12px;
+        height: 160px;
+        overflow-y: auto;
+        margin: 8px 0 0;
+        white-space: pre-wrap;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Rohelise laine demonstratsioon</h1>
+      <p class="hint">
+        Ristmik 1 on ainult ekraanil. Ristmik 2 on füüsiline foor - ekraanil
+        näed sama, mida füüsiline foor peaks parajasti näitama.
+      </p>
+
+      <!-- Olekuriba: sünkroniseeritud kellaaeg, kust aeg saadi, kas ESP on ühendatud -->
+      <div class="statusbar">
+        <div>Kellaaeg: <b id="clock">--:--:--</b></div>
+        <div>
+          Aja allikas: <span id="timeSource" class="warn">sünkroniseerin…</span>
+        </div>
+        <div>ESP8266: <span id="espStatus" class="warn">ühendamata</span></div>
+      </div>
+
+      <div class="junctions">
+        <!-- ristmik 1: virtuaalne foor, nihe alati 0 -->
+        <section class="junction" id="j1">
+          <h2>Ristmik 1</h2>
+          <p class="hint">Ainult ekraanil · nihe 0 s</p>
+          <div class="lights-container">
+            <!-- autode foor: punane, kollane, roheline -->
+            <div class="light-box">
+              <div class="light-label">Autod</div>
+              <div class="light red"></div>
+              <div class="light yellow"></div>
+              <div class="light green"></div>
+            </div>
+            <!-- jalakäijate foor: punane, roheline -->
+            <div class="light-box">
+              <div class="light-label">Jalakäija</div>
+              <div class="light red"></div>
+              <div class="light green"></div>
+            </div>
+          </div>
+          <!-- praeguse faasi nimi ja mitu sekundit on jäänud -->
+          <p class="phase"></p>
+          <p class="left"></p>
+        </section>
+
+        <!-- ristmik 2: füüsilise foori koopia ekraanil, arvestab nihet -->
+        <section class="junction physical" id="j2">
+          <h2>Ristmik 2</h2>
+          <p class="hint" id="j2info">Füüsiline (ESP8266) · nihe 0 s</p>
+          <div class="lights-container">
+            <div class="light-box">
+              <div class="light-label">Autod</div>
+              <div class="light red"></div>
+              <div class="light yellow"></div>
+              <div class="light green"></div>
+            </div>
+            <div class="light-box">
+              <div class="light-label">Jalakäija</div>
+              <div class="light red"></div>
+              <div class="light green"></div>
+            </div>
+          </div>
+          <p class="phase"></p>
+          <p class="left"></p>
+        </section>
+      </div>
+
+      <!-- juhtpaneel: kõik foori seaded ühes kohas, sammude kaupa -->
+      <section class="panel">
+        <h2>Juhtpaneel</h2>
+
+        <!-- 1. samm: USB ühendus -->
+        <div class="step">
+          <h3>1. Ühenda füüsiline foor</h3>
+          <button id="connectBtn" class="connect-btn" onclick="connectUSB()">
+            Ühenda ESP8266 (USB)
+          </button>
+        </div>
+
+        <!-- 2. samm: režiimi valik (data-mode = režiimi number) -->
+        <div class="step">
+          <h3>2. Režiim</h3>
+          <button data-mode="0" onclick="setMode(0)">Automaatne tsükkel</button>
+          <button data-mode="1" onclick="setMode(1)">
+            Vilkuv kollane (öö)
+          </button>
+          <button data-mode="2" onclick="setMode(2)">Nupuga ülekäik</button>
+          <!-- valitud režiimi selgitus -->
+          <p class="hint" id="modeInfo"></p>
+        </div>
+
+        <!-- 3. samm: tsükli pikkus ja rohelise laine nihe -->
+        <div class="step">
+          <h3>3. Ajastus</h3>
+          <label
+            >Tsükli pikkus (s):
+            <input type="number" id="cycleInput" value="20" min="13" max="120"
+          /></label>
+          <!-- siia kirjutatakse, kui pikk on roheline antud tsükli pikkuse juures -->
+          <p class="hint" id="cycleHint"></p>
+
+          <label
+            >Ristmik 2 nihe (s):
+            <input
+              type="number"
+              id="offsetInput"
+              value="0"
+              min="-120"
+              max="120"
+          /></label>
+          <p class="hint">
+            Positiivne = Ristmik 2 läheb roheliseks hiljem (laine liigub 1 ->
+            2). Negatiivne = varem (laine liigub 2 -> 1). See kehtib ainult
+            automaatrežiimis.
+          </p>
+
+          <button class="apply-btn" onclick="applySettings()">Rakenda</button>
+          <span id="applyMsg" class="hint"></span>
+        </div>
+
+        <!-- 4. samm: jalakäija nupp (aktiivne ainult nupurežiimis) -->
+        <div class="step">
+          <h3>4. Jalakäija nupp</h3>
+          <button id="pedBtn" class="big-btn" onclick="pressButton()">
+            JALAKÄIJA NUPP
+          </button>
+        </div>
+      </section>
+
+      <!-- Logi: mida veebileht ESP-le saatis ja mida ESP vastas -->
+      <section class="panel">
+        <h2>Side ESP8266-ga</h2>
+        <pre id="log">Ühendus puudub.</pre>
+      </section>
+    </div>
+
+    <script>
+      // ===== Foori ajastus (peab ühtima ESP8266 koodiga!) =====
+
+      // Ühe tule võimalikud olekud faaside tabelis
+      const L_OFF = 0; // Kustus
+      const L_ON = 1; // Põleb
+      const L_BLINK = 2; // Vilgub (0,5 s põleb, 0,5 s kustus)
+
+      // Automaatse tsükli faasid järjekorras (tsükkel algab jalakäijate rohelisega).
+      // dur = kestus ms; 0 = rohelise kestus (arvutatakse tsükli pikkusest)
+      // car = autode [punane, kollane, roheline], ped = jalakäijate [punane, roheline]
+      const PHASES = [
+        {
+          dur: 0,
+          car: [L_ON, L_OFF, L_OFF],
+          ped: [L_OFF, L_ON],
+          name: "Jalakäijatele roheline",
+        },
+        {
+          dur: 2000,
+          car: [L_ON, L_OFF, L_OFF],
+          ped: [L_OFF, L_BLINK],
+          name: "Jalakäijatele vilkuv roheline",
+        },
+        {
+          dur: 1000,
+          car: [L_ON, L_OFF, L_OFF],
+          ped: [L_ON, L_OFF],
+          name: "Kõik punased",
+        },
+        {
+          dur: 1000,
+          car: [L_ON, L_ON, L_OFF],
+          ped: [L_ON, L_OFF],
+          name: "Autodele punane + kollane",
+        },
+        {
+          dur: 0,
+          car: [L_OFF, L_OFF, L_ON],
+          ped: [L_ON, L_OFF],
+          name: "Autodele roheline",
+        },
+        {
+          dur: 2000,
+          car: [L_OFF, L_OFF, L_BLINK],
+          ped: [L_ON, L_OFF],
+          name: "Autodele vilkuv roheline",
+        },
+        {
+          dur: 2000,
+          car: [L_OFF, L_ON, L_OFF],
+          ped: [L_ON, L_OFF],
+          name: "Autodele kollane",
+        },
+        {
+          dur: 1000,
+          car: [L_ON, L_OFF, L_OFF],
+          ped: [L_ON, L_OFF],
+          name: "Kõik punased",
+        },
+      ];
+      const FIXED_MS = 9000; // Kõigi mitte-roheliste faaside kestuste summa (2+1+1+2+2+1 s)
+      const IDLE_PHASE = 4; // Nupurežiimi ooteseis: autodele roheline
+      const BUTTON_START = 5; // Nupuvajutuse järel alustatakse faasist "autodele vilkuv roheline"
+
+      // Režiimide selgitused, mida näidatakse režiiminuppude all
+      const MODE_INFO = [
+        "Foorid vahetuvad ise kogu aeg. Ristmik 2 töötab sama tsükliga, aga nihkega.",
+        "Autodele vilgub kollane, jalakäijate tuled on kustu. Nihet ei arvestata.",
+        "Autodele põleb roheline, kuni jalakäija vajutab nuppu. Siis tuleb jalakäijatele üks roheline ja seejärel jälle ootamine.",
+      ];
+
+      // Allikad, kust küsitakse täpset kellaaega (proovitakse järjest, kuni üks vastab).
+      // parse tagastab aja millisekundites alates 1970 (UTC).
+      const TIME_SOURCES = [
+        {
+          name: "cloudflare.com",
+          url: "https://www.cloudflare.com/cdn-cgi/trace",
+          parse: async (res) =>
+            parseFloat((await res.text()).match(/^ts=([\d.]+)/m)[1]) * 1000,
+        },
+        {
+          name: "time.now",
+          url: "https://time.now/developer/api/timezone/Europe/Tallinn",
+          parse: async (res) =>
+            Date.parse(
+              (await res.json()).utc_datetime.replace(/(\.\d{3})\d+/, "$1"),
+            ),
+        },
+      ];
+
+      // ===== Olek =====
+      let mode = 0; // Režiim: 0 = automaatne, 1 = vilkuv kollane, 2 = nupuga
+      let cycleMs = 20000; // Kogu tsükli pikkus millisekundites
+      let offsetMs = 0; // Ristmik 2 nihe millisekundites
+      let pressAt = -1; // Jalakäija nupu vajutuse hetk (ms keskööst); -1 = pole vajutatud
+
+      let clockOffset = 0; // Õige aeg miinus arvuti kell (ms)
+      let dayStart = computeDayStart(); // Tänase südaöö hetk; selle suhtes loetakse aega
+
+      let port = null; // Jadaport (USB)
+      let writer = null; // Kirjutaja, mille kaudu käsud ESP-le saadetakse
+      let reader = null; // Lugeja, millega ESP vastuseid loetakse
+      let readDone = null; // Lubadus, mis täitub, kui pordist lugemine lõppes
+      let writeDone = null; // Lubadus, mis täitub, kui porti kirjutamine lõppes
+
+      // ===== Abifunktsioonid =====
+
+      // Jääk, mis on alati positiivne (JS-i % annab negatiivse arvu korral negatiivse tulemuse)
+      function mod(a, n) {
+        return ((a % n) + n) % n;
+      }
+
+      // Tänase südaöö hetk (arvutatakse sünkroniseeritud aja järgi)
+      function computeDayStart() {
+        const d = new Date(Date.now() + clockOffset);
+        d.setHours(0, 0, 0, 0);
+        return d.getTime();
+      }
+
+      // Praegune sünkroniseeritud aeg millisekundites alates südaööst (sama ajaskaala mis ESP-l)
+      function nowMs() {
+        return Date.now() + clockOffset - dayStart;
+      }
+
+      // Rohelise tule kestus: tsükkel miinus fikseeritud faasid, jagatud kaheks (autod + jalakäijad)
+      function greenMs() {
+        return (cycleMs - FIXED_MS) / 2;
+      }
+
+      // Faasi kestus: tabelist või rohelise kestus, kui tabelis on 0
+      function phaseDur(i) {
+        return PHASES[i].dur || greenMs();
+      }
+
+      // Mitu ms möödub tsükli algusest kuni faasi i alguseni
+      function phaseStart(i) {
+        let sum = 0;
+        for (let k = 0; k < i; k++) sum += phaseDur(k);
+        return sum;
+      }
+
+      // Kas nupuvajutusega ülekäik praegu käib (ülekäik kestab tsükli pikkus miinus autode roheline)
+      function buttonActive(now) {
+        return pressAt >= 0 && now - pressAt < cycleMs - greenMs();
+      }
+
+      // Leiab, milline faas on tsükli hetkel ct, kaua see on kestnud ja kaua veel kestab
+      function phaseAt(ct) {
+        for (let i = 0; i < PHASES.length; i++) {
+          const d = phaseDur(i);
+          if (ct < d) return { index: i, inPhase: ct, left: d - ct };
+          ct -= d; // Liigume järgmise faasi juurde
+        }
+      }
+
+      // Teisendab faasi viie tule olekuks [autod R, Y, G, jalakäija R, G] (true = põleb)
+      function lightsOf(i, inPhase) {
+        const blinkOn = mod(inPhase, 1000) < 500; // Vilkumine: iga sekundi esimene pool põleb
+        return [...PHASES[i].car, ...PHASES[i].ped].map(
+          (v) => v === L_ON || (v === L_BLINK && blinkOn),
+        );
+      }
+
+      // Arvutab ristmiku oleku: millised tuled põlevad, faasi nimi ja allesjäänud aeg
+      function getState(offset) {
+        const now = nowMs();
+
+        if (mode === 1) {
+          // Öörežiim: ainult autode kollane vilgub, nihet ei arvestata
+          const on = mod(now, 1000) < 500;
+          return {
+            lights: [false, on, false, false, false],
+            text: "Vilkuv kollane (öörežiim)",
+            left: null,
+          };
+        }
+
+        let p;
+        if (mode === 0) {
+          // Automaatne tsükkel: nihe lükkab tsüklit (+ = hiljem, − = varem)
+          p = phaseAt(mod(now - offset, cycleMs));
+        } else if (buttonActive(now)) {
+          // Nupurežiim, ülekäik käib: liigume tsüklis alates faasist "autodele vilkuv roheline"
+          p = phaseAt(mod(phaseStart(BUTTON_START) + now - pressAt, cycleMs));
+        } else {
+          // Nupurežiim, ootame nuppu: autodele roheline
+          return {
+            lights: lightsOf(IDLE_PHASE, 0),
+            text: "Autodele roheline – ootan jalakäija nuppu",
+            left: null,
+          };
+        }
+        return {
+          lights: lightsOf(p.index, p.inPhase),
+          text: PHASES[p.index].name,
+          left: p.left,
+        };
+      }
+
+      // ===== Ekraani uuendamine =====
+
+      // Kannab ristmiku oleku HTML-i: tuled, faasi nimi, allesjäänud aeg
+      function renderJunction(id, st) {
+        const el = document.getElementById(id);
+        // .light elemendid on HTML-is järjekorras: autod R, Y, G, jalakäija R, G
+        el.querySelectorAll(".light").forEach((light, k) =>
+          light.classList.toggle("active", st.lights[k]),
+        );
+        el.querySelector(".phase").textContent = st.text;
+        el.querySelector(".left").textContent =
+          st.left === null ? "" : "veel " + Math.ceil(st.left / 1000) + " s";
+      }
+
+      // Jalakäija nupp on vajutatav ainult nupurežiimis ja siis, kui ülekäik juba ei käi
+      function updatePedButton() {
+        const btn = document.getElementById("pedBtn");
+        if (mode !== 2) {
+          btn.disabled = true;
+          btn.textContent = "JALAKÄIJA NUPP (ainult nupurežiimis)";
+        } else if (buttonActive(nowMs())) {
+          btn.disabled = true;
+          btn.textContent = "Ülekäik käib…";
+        } else {
+          btn.disabled = false;
+          btn.textContent = "JALAKÄIJA NUPP";
+        }
+      }
+
+      // Uuendab selgitavad tekstid (rohelise kestus, Ristmik 2 nihe)
+      function updateLabels() {
+        const sign = offsetMs > 0 ? "+" : "";
+        document.getElementById("j2info").textContent =
+          "Füüsiline (ESP8266) · nihe " +
+          sign +
+          offsetMs / 1000 +
+          " s" +
+          (mode === 0 ? "" : " (selles režiimis ei kehti)");
+        document.getElementById("cycleHint").textContent =
+          "Roheline: autodele " +
+          greenMs() / 1000 +
+          " s ja jalakäijatele " +
+          greenMs() / 1000 +
+          " s + 9 s vahefaase (vilkumine, kollane, kõik punased).";
+      }
+
+      // Joonistab kõik ekraanile; brauser kutsub seda ~60 korda sekundis
+      function render() {
+        renderJunction("j1", getState(0)); // Ristmik 1: nihe 0
+        renderJunction("j2", getState(offsetMs)); // Ristmik 2: sama arvutus nagu ESP-s
+        document.getElementById("clock").textContent = new Date(
+          Date.now() + clockOffset,
+        ).toLocaleTimeString("et-EE");
+        updatePedButton();
+        requestAnimationFrame(render); // Küsime järgmist kaadrit -> pidev animatsioon
+      }
+
+      // ===== Juhtimine =====
+
+      // Vahetab režiimi nii ekraanil kui ka ESP-l
+      function setMode(m) {
+        mode = m;
+        pressAt = -1; // Režiimi vahetusel tühistame pooleli oleva nupuvajutuse
+        // Tõstame valitud režiimi nupu esile
+        document
+          .querySelectorAll("[data-mode]")
+          .forEach((b) =>
+            b.classList.toggle("selected", Number(b.dataset.mode) === m),
+          );
+        document.getElementById("modeInfo").textContent = MODE_INFO[m];
+        updateLabels();
+        sendCommand("MODE:" + m);
+      }
+
+      // Loeb väljadelt tsükli pikkuse ja nihke, kontrollib ja rakendab need
+      function applySettings() {
+        const cycleSec = Math.round(
+          Number(document.getElementById("cycleInput").value),
+        );
+        const offsetSec = Math.round(
+          Number(document.getElementById("offsetInput").value),
+        );
+        const msg = document.getElementById("applyMsg");
+
+        // Kontroll (NaN ei läbi kumbagi võrdlust, seega tühi väli annab ka vea)
+        if (!(cycleSec >= 13 && cycleSec <= 120)) {
+          msg.textContent = "Tsükli pikkus peab olema 13–120 s.";
+          msg.className = "error";
+          return;
+        }
+        if (!(offsetSec >= -120 && offsetSec <= 120)) {
+          msg.textContent = "Nihe peab olema −120 … 120 s.";
+          msg.className = "error";
+          return;
+        }
+
+        // Sekundid -> millisekundid
+        cycleMs = cycleSec * 1000;
+        offsetMs = offsetSec * 1000;
+        updateLabels();
+
+        sendCommand("CYCLE:" + cycleSec);
+        sendCommand("OFFSET:" + offsetSec);
+
+        msg.textContent = writer
+          ? "Rakendatud (ka ESP-le saadetud)."
+          : "Rakendatud (ainult ekraanil – ESP pole ühendatud).";
+        msg.className = "ok";
+      }
+
+      // Jalakäija nupu vajutus
+      function pressButton() {
+        const now = nowMs();
+        if (mode !== 2 || buttonActive(now)) return; // Vale režiim või ülekäik juba käib
+        pressAt = Math.round(now);
+        // Saadame vajutuse hetke, et ESP alustaks täpselt samast hetkest
+        sendCommand("BUTTON:" + pressAt);
+      }
+
+      // ===== Kellaaja sünkroniseerimine =====
+
+      // Küsib internetist õige aja ja arvutab, kui palju arvuti kell sellest erineb
+      async function syncClock() {
+        const source = document.getElementById("timeSource");
+        for (const src of TIME_SOURCES) {
+          try {
+            const sent = Date.now();
+            const res = await fetch(src.url, {
+              cache: "no-store",
+              signal: AbortSignal.timeout(4000),
+            });
+            const time = await src.parse(res);
+            if (!isFinite(time)) throw new Error("vale vastus");
+            const received = Date.now();
+            // Vastus jõudis kohale poole päringu ajaga hiljem, kui server selle saatis
+            const serverMs = time + (received - sent) / 2;
+            clockOffset = Math.round(serverMs - received);
+            source.textContent =
+              "internet (" +
+              src.name +
+              "), arvuti kell on " +
+              Math.abs(clockOffset) +
+              " ms " +
+              (clockOffset > 0 ? "maas" : "ees");
+            source.className = "ok";
+            dayStart = computeDayStart();
+            return;
+          } catch (e) {
+            // See allikas ei vastanud -> proovime järgmist
+          }
+        }
+        // Ükski allikas ei vastanud -> kasutame arvuti enda kella
+        clockOffset = 0;
+        source.textContent = "internet ei vastanud – kasutan arvuti kella";
+        source.className = "warn";
+        dayStart = computeDayStart();
+      }
+
+      // ===== USB ühendus ESP8266-ga (Web Serial) =====
+
+      // Kirjutab rea logisse (uuemad all, alles jääb 50 viimast rida)
+      function log(text) {
+        const el = document.getElementById("log");
+        const time = new Date(Date.now() + clockOffset).toLocaleTimeString(
+          "et-EE",
+        );
+        const lines = el.textContent
+          .split("\n")
+          .filter((l) => l && l !== "Ühendus puudub.");
+        lines.push(time + "  " + text);
+        el.textContent = lines.slice(-50).join("\n");
+        el.scrollTop = el.scrollHeight; // Kerime alla viimase rea juurde
+      }
+
+      // Näitab ESP ühenduse olekut olekuribal
+      function setEspStatus(text, cls) {
+        const el = document.getElementById("espStatus");
+        el.textContent = text;
+        el.className = cls;
+      }
+
+      // Saadab ühe käsurea ESP-le (kui ühendus on olemas)
+      function sendCommand(cmd) {
+        if (!writer) return;
+        writer.write(cmd + "\n").catch(() => {}); // Viga tekib ainult siis, kui ühendus katkes
+        log("→ ESP: " + cmd);
+      }
+
+      // Saadab ESP-le kogu hetkeoleku: kellaaja, seaded, režiimi ja pooleli oleva nupuvajutuse
+      function sendFullState() {
+        sendCommand("SYNC:" + Math.round(nowMs()));
+        sendCommand("CYCLE:" + cycleMs / 1000);
+        sendCommand("OFFSET:" + offsetMs / 1000);
+        sendCommand("MODE:" + mode); // MODE tühistab ESP-s nupuvajutuse, seega BUTTON alles pärast seda
+        if (mode === 2 && buttonActive(nowMs()))
+          sendCommand("BUTTON:" + pressAt);
+      }
+
+      // Loob USB ühenduse ESP8266-ga
+      async function connectUSB() {
+        if (!("serial" in navigator)) {
+          setEspStatus(
+            "see brauser ei toeta USB-d – kasuta Chrome'i või Edge'i",
+            "error",
+          );
+          return;
+        }
+        let chosen;
+        try {
+          chosen = await navigator.serial.requestPort();
+        } catch (err) {
+          return; // Kasutaja sulges pordi valiku akna
+        }
+        try {
+          await closePort(); // Eelmine ühendus (kui see jäi lahti) suletakse enne uue avamist
+          if (chosen.readable) await chosen.close(); // Port on veel lahti -> sulgeme
+          port = chosen;
+          // Avame pordi samal kiirusel mis ESP koodis (115200)
+          await port.open({ baudRate: 115200 });
+
+          // Tekst kodeeritakse baitideks ja suunatakse porti
+          const encoder = new TextEncoderStream();
+          writeDone = encoder.readable.pipeTo(port.writable);
+          writer = encoder.writable.getWriter();
+
+          document.getElementById("connectBtn").disabled = true;
+          setEspStatus("ühendatud", "ok");
+          log("Ühendatud.");
+
+          readLoop(); // Hakkame ESP vastuseid kuulama (töötab taustal)
+          // Kui ESP pordi avamisel ei taaskäivitunud, ei saada ta READY-t -> saadame oleku kohe
+          sendFullState();
+        } catch (err) {
+          await closePort();
+          setEspStatus(
+            "ühendus ebaõnnestus: " +
+              err.message +
+              " (kas Arduino IDE Serial Monitor või mõni teine vahekaart kasutab porti?)",
+            "error",
+          );
+        }
+      }
+
+      // Sulgeb pordi ja kõik selle vood, et porti saaks uuesti avada
+      async function closePort() {
+        const p = port,
+          w = writer,
+          r = reader;
+        const rd = readDone,
+          wd = writeDone;
+        port = writer = reader = readDone = writeDone = null;
+        try {
+          if (r) await r.cancel();
+        } catch (e) {}
+        try {
+          if (rd) await rd;
+        } catch (e) {}
+        try {
+          if (w) await w.close();
+        } catch (e) {}
+        try {
+          if (wd) await wd;
+        } catch (e) {}
+        try {
+          if (p && p.readable) await p.close();
+        } catch (e) {}
+      }
+
+      // Loeb ESP-st tulevaid ridu, kuni ühendus katkeb
+      async function readLoop() {
+        const decoder = new TextDecoderStream(); // Baidid -> tekst
+        readDone = port.readable.pipeTo(decoder.writable).catch(() => {});
+        const myReader = decoder.readable.getReader();
+        reader = myReader;
+        let buffer = ""; // Pooleli olev rida
+        try {
+          while (true) {
+            const { value, done } = await myReader.read();
+            if (done) break;
+            buffer += value;
+            const lines = buffer.split("\n");
+            buffer = lines.pop(); // Viimane tükk võib olla pooleli -> jääb järgmiseks korraks
+            lines.forEach(handleEspLine);
+          }
+        } catch (e) {
+          // Juhe tõmmati välja vms
+        }
+        if (reader !== myReader) return; // Port suleti juba uue ühenduse loomisel
+        await closePort(); // Port vabastatakse, et uuesti ühendamine töötaks
+        document.getElementById("connectBtn").disabled = false;
+        setEspStatus("ühendus katkes – ühenda uuesti", "error");
+        log("Ühendus katkes.");
+      }
+
+      // Töötleb ühe ESP-lt saadud rea
+      function handleEspLine(line) {
+        line = line.trim();
+        if (!line) return;
+        log("ESP: " + line);
+        // ESP käivitus (pordi avamine sageli taaskäivitab plaadi) -> saadame kogu oleku uuesti
+        if (line === "READY") sendFullState();
+      }
+
+      // ===== Käivitamine =====
+
+      setMode(0); // Algne režiim: automaatne
+      // Sünkroniseerime kella ja alles siis hakkame foore joonistama
+      syncClock().then(() => {
+        if (writer) sendFullState(); // Kui ESP jõuti juba enne ühendada, saadame uue kellaaja
+        render();
+      });
+      // Iga 30 s järel saadame ESP-le kellaaja uuesti, et ESP kell ära ei triiviks
+      setInterval(() => sendCommand("SYNC:" + Math.round(nowMs())), 30000);
+    </script>
+  </body>
+</html>
