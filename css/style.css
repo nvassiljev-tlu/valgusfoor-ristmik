@@ -1,0 +1,832 @@
+:root {
+  color-scheme: dark;
+  --taust: #0e1114;
+  --plokk: #161a1f;
+  --plokk-2: #1c2127;
+  --joon: #2a3139;
+  --tekst: #e8ecf0;
+  --vaike: #98a2ad;
+  --aktsent: #4da3ff;
+  --punane: #ff453a;
+  --kollane: #ffd60a;
+  --roheline: #30d158;
+  --kustus: #2a2e33;
+  --maa: #18211d;
+  --tee: #3a4048;
+  --saar: #22302a;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--taust);
+  color: var(--tekst);
+  font: 14px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+h1 {
+  margin: 0;
+  font-size: 22px;
+  letter-spacing: -0.01em;
+}
+
+h2 {
+  margin: 0 0 10px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+h2.teine {
+  margin-top: 16px;
+}
+
+p {
+  margin: 6px 0 0;
+}
+
+button {
+  font: inherit;
+  color: var(--tekst);
+  background: var(--plokk-2);
+  border: 1px solid var(--joon);
+  border-radius: 7px;
+  padding: 6px 12px;
+  cursor: pointer;
+}
+
+button:hover {
+  border-color: #3d4752;
+}
+
+button:focus-visible,
+select:focus-visible,
+.rida:focus-visible {
+  outline: 2px solid var(--aktsent);
+  outline-offset: 1px;
+}
+
+button[aria-pressed="true"] {
+  background: #1d3a5c;
+  border-color: var(--aktsent);
+}
+
+button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.nupp-esmane {
+  background: var(--aktsent);
+  border-color: var(--aktsent);
+  color: #06121f;
+  font-weight: 600;
+}
+
+select {
+  font: inherit;
+  color: var(--tekst);
+  background: var(--plokk-2);
+  border: 1px solid var(--joon);
+  border-radius: 6px;
+  padding: 5px 6px;
+  width: 100%;
+  margin-top: 3px;
+}
+
+code {
+  font: 12px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  color: #cfe3ff;
+}
+
+.vaike {
+  color: var(--vaike);
+  font-size: 13px;
+}
+
+.hoiatus {
+  color: #ffb340;
+}
+
+.pais {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 18px 20px 6px;
+  max-width: 1500px;
+  margin: 0 auto;
+}
+
+.alapealkiri {
+  margin: 2px 0 0;
+  color: var(--vaike);
+}
+
+.kell {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.kellaaeg {
+  font-size: 26px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.paigutus {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 390px;
+  gap: 16px;
+  padding: 12px 20px 24px;
+  max-width: 1500px;
+  margin: 0 auto;
+}
+
+.veerg {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+.plokk {
+  background: var(--plokk);
+  border: 1px solid var(--joon);
+  border-radius: 12px;
+  padding: 14px 16px;
+}
+
+.plokk-pais {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.plokk-pais h2 {
+  margin: 0;
+}
+
+@media (max-width: 1100px) {
+  .paigutus {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .pais,
+  .paigutus {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+  .plokk {
+    padding: 12px;
+  }
+}
+
+.tooriba {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.segmendid {
+  display: inline-flex;
+}
+
+.segmendid button {
+  border-radius: 0;
+}
+
+.segmendid button:first-child {
+  border-radius: 7px 0 0 7px;
+}
+
+.segmendid button:last-child {
+  border-radius: 0 7px 7px 0;
+  margin-left: -1px;
+}
+
+.lyliti {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--vaike);
+  cursor: pointer;
+}
+
+.kaart {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1100 / 720;
+  border-radius: 8px;
+  background: var(--maa);
+  user-select: none;
+}
+
+.kaart .alus-foto {
+  display: none;
+  filter: brightness(0.62) saturate(0.75);
+}
+
+.kaart.foto .alus-foto {
+  display: inline;
+}
+
+.kaart.foto .alus-skeem {
+  display: none;
+}
+
+.kaart .maa {
+  fill: var(--maa);
+}
+
+.kaart .tee {
+  fill: var(--tee);
+}
+
+.kaart .tee-kaar {
+  fill: none;
+  stroke: var(--tee);
+  stroke-linejoin: round;
+}
+
+.kaart .saar {
+  fill: none;
+  stroke: var(--saar);
+  stroke-linecap: round;
+}
+
+.kaart .teenimed text {
+  fill: #c9d2db;
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  paint-order: stroke;
+  stroke: rgba(0, 0, 0, 0.75);
+  stroke-width: 5px;
+}
+
+.kaart .suund {
+  fill: none;
+  stroke-width: 13;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0;
+  transition: opacity 0.25s;
+  pointer-events: none;
+}
+
+.kaart .suund.roheline {
+  stroke: var(--roheline);
+  opacity: 0.5;
+  marker-end: url(#nool-roheline);
+}
+
+.kaart .suund.kollane {
+  stroke: var(--kollane);
+  opacity: 0.32;
+  stroke-dasharray: 16 14;
+  marker-end: url(#nool-kollane);
+}
+
+.kaart.peida-suunad .suund {
+  display: none;
+}
+
+.kaart .nool-roheline {
+  fill: var(--roheline);
+}
+
+.kaart .nool-kollane {
+  fill: var(--kollane);
+}
+
+.kaart .ylekaik {
+  cursor: pointer;
+}
+
+.kaart .sebra-triip {
+  fill: #f2f2f2;
+  opacity: 0.8;
+}
+
+.kaart .sebra-toon {
+  fill: rgba(255, 255, 255, 0.04);
+  stroke: transparent;
+  stroke-width: 4;
+}
+
+.kaart .sebra-toon.roheline {
+  fill: rgba(48, 209, 88, 0.6);
+}
+
+.kaart .sebra-toon.punane {
+  fill: rgba(255, 69, 58, 0.38);
+}
+
+.kaart .ylekaik.valitud .sebra-toon {
+  stroke: var(--aktsent);
+}
+
+.kaart .raja-silt {
+  fill: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  text-anchor: middle;
+  paint-order: stroke;
+  stroke: rgba(0, 0, 0, 0.85);
+  stroke-width: 4px;
+  pointer-events: none;
+}
+
+.kaart .korpus {
+  fill: #0a0b0d;
+  stroke: #4a525c;
+  stroke-width: 2;
+}
+
+.kaart .lamp {
+  fill: var(--kustus);
+}
+
+.kaart .lamp.punane.on {
+  fill: var(--punane);
+  filter: drop-shadow(0 0 5px var(--punane));
+}
+
+.kaart .lamp.kollane.on {
+  fill: var(--kollane);
+  filter: drop-shadow(0 0 5px var(--kollane));
+}
+
+.kaart .lamp.roheline.on {
+  fill: var(--roheline);
+  filter: drop-shadow(0 0 5px var(--roheline));
+}
+
+.kaart .auto-foor {
+  cursor: pointer;
+}
+
+.kaart .auto-foor .valik {
+  fill: none;
+  stroke: var(--aktsent);
+  stroke-width: 4;
+  opacity: 0;
+}
+
+.kaart .auto-foor.valitud .valik {
+  opacity: 1;
+}
+
+.kaart .foori-silt {
+  fill: #fff;
+  font-size: 19px;
+  font-weight: 700;
+  text-anchor: middle;
+  paint-order: stroke;
+  stroke: rgba(0, 0, 0, 0.85);
+  stroke-width: 4px;
+}
+
+.kaart .seadme-silt {
+  display: none;
+}
+
+.kaart .seadme-silt.nahtav {
+  display: inline;
+}
+
+.kaart .seadme-silt rect {
+  fill: var(--aktsent);
+}
+
+.kaart .seadme-silt text {
+  fill: #06121f;
+  font-size: 13px;
+  font-weight: 700;
+  text-anchor: middle;
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  margin-top: 10px;
+  font-size: 13px;
+  color: var(--tekst);
+}
+
+.legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.tapp {
+  display: inline-block;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  margin-right: 3px;
+}
+
+.tapp.punane {
+  background: var(--punane);
+}
+
+.tapp.kollane {
+  background: var(--kollane);
+}
+
+.tapp.roheline {
+  background: var(--roheline);
+}
+
+.tapp.vilgub {
+  animation: vilgu 1s steps(1) infinite;
+}
+
+@keyframes vilgu {
+  50% {
+    opacity: 0.15;
+  }
+}
+
+.ajajoon-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.ajajoon .tuhi {
+  margin: 0;
+  color: var(--vaike);
+}
+
+.aj-faas {
+  fill: #22303d;
+}
+
+.aj-vahe {
+  fill: #1a1f25;
+}
+
+.aj-faasi-nimi {
+  fill: var(--tekst);
+  font-size: 12px;
+  font-weight: 600;
+  text-anchor: middle;
+}
+
+.aj-silt {
+  fill: var(--vaike);
+  font-size: 12px;
+  font-weight: 600;
+  text-anchor: end;
+}
+
+.aj-100,
+.aj-10 {
+  fill: #8f2b26;
+}
+
+.aj-110 {
+  fill: #d8891a;
+}
+
+.aj-010 {
+  fill: var(--kollane);
+}
+
+.aj-001,
+.aj-01 {
+  fill: #27a74a;
+}
+
+.aj-002,
+.aj-02 {
+  fill: url(#aj-vilkuv);
+}
+
+.aj-vilkuv-alus {
+  fill: #27a74a;
+}
+
+.aj-vilkuv-triip {
+  fill: #134d24;
+}
+
+.aj-telg {
+  stroke: var(--vaike);
+}
+
+.aj-aeg {
+  fill: var(--vaike);
+  font-size: 11px;
+  text-anchor: middle;
+}
+
+.aj-kursor {
+  stroke: #fff;
+  stroke-width: 2;
+}
+
+.reziimid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+
+.reziimid [data-reziim="auto"] {
+  grid-column: 1 / -1;
+}
+
+.reziimid button {
+  padding: 6px 4px;
+}
+
+.praegu-rida {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.praegu-rida h2 {
+  margin: 0;
+}
+
+.kiip {
+  font-size: 12px;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: #1d3a5c;
+  color: #cfe3ff;
+}
+
+.faas {
+  font-size: 20px;
+  font-weight: 650;
+  margin-top: 8px;
+}
+
+.edenemine {
+  height: 6px;
+  background: var(--plokk-2);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-top: 10px;
+}
+
+.edenemine div {
+  height: 100%;
+  width: 0;
+  background: var(--aktsent);
+}
+
+.edenemine div.oo {
+  background: var(--kollane);
+  animation: vilgu 1s steps(1) infinite;
+}
+
+.faasi-aeg {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 6px;
+  flex-wrap: wrap;
+}
+
+.seade {
+  border: 1px solid var(--joon);
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-top: 10px;
+  background: var(--plokk-2);
+}
+
+.seade:first-child {
+  margin-top: 0;
+}
+
+.seade-pais {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.seade-nimi {
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.seade-nr {
+  display: inline-grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--aktsent);
+  color: #06121f;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.seade-olek {
+  font-size: 12px;
+  color: var(--vaike);
+}
+
+.seade-olek.ok {
+  color: var(--roheline);
+}
+
+.seade-olek.viga {
+  color: #ffb340;
+}
+
+.seade-nupud {
+  margin-left: auto;
+  display: flex;
+  gap: 6px;
+}
+
+.seade-nupud button {
+  padding: 3px 9px;
+  font-size: 13px;
+}
+
+.seade-valikud {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.seade-valikud label {
+  font-size: 12px;
+  color: var(--vaike);
+}
+
+.seade-side {
+  margin-top: 8px;
+}
+
+.valitud-pais {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.valitud-olek {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.maara {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.foorid-nimekiri {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.rida {
+  display: grid;
+  grid-template-columns: auto auto minmax(0, 1fr) auto;
+  grid-template-areas: "mini tahis kirjeldus olek" "mini tahis kirjeldus seade";
+  align-items: center;
+  column-gap: 9px;
+  padding: 6px 6px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.rida:hover {
+  background: var(--plokk-2);
+}
+
+.rida.valitud {
+  background: #1d2c3d;
+}
+
+.rida .mini {
+  grid-area: mini;
+}
+
+.rida .tahis {
+  grid-area: tahis;
+}
+
+.rida .kirjeldus {
+  grid-area: kirjeldus;
+  font-size: 12px;
+  color: var(--vaike);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rida .olek {
+  grid-area: olek;
+  font-size: 12px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.rida .seade-kiip {
+  grid-area: seade;
+  justify-self: end;
+  font-size: 11px;
+  font-weight: 700;
+  color: #06121f;
+  background: var(--aktsent);
+  border-radius: 999px;
+  padding: 0 7px;
+}
+
+.rida .seade-kiip:empty {
+  display: none;
+}
+
+.tahis {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.tahis.suur {
+  font-size: 22px;
+}
+
+.mini {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 3px;
+  background: #0a0b0d;
+  border: 1px solid #3a424b;
+  border-radius: 5px;
+}
+
+.mini i {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--kustus);
+}
+
+.mini i.punane.on {
+  background: var(--punane);
+}
+
+.mini i.kollane.on {
+  background: var(--kollane);
+}
+
+.mini i.roheline.on {
+  background: var(--roheline);
+}
+
+.foorid-nimekiri.jk {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px 8px;
+}
+
+.foorid-nimekiri.jk .rida {
+  grid-template-columns: auto auto minmax(0, 1fr);
+  grid-template-areas: "mini tahis olek";
+}
+
+.logi {
+  margin: 0;
+  background: #0a0c0e;
+  border: 1px solid var(--joon);
+  border-radius: 8px;
+  padding: 8px 10px;
+  height: 190px;
+  overflow: auto;
+  font: 12px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  color: #c7d0d9;
+  white-space: pre-wrap;
+}
