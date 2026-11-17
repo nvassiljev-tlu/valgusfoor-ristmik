@@ -1,0 +1,286 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 760" width="1120" height="760" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif">
+  <title>Elektriskeem: üks füüsiline foor (ESP8266 NodeMCU, 5 LED-i)</title>
+  <defs>
+    <style>
+      text { fill: #1d1d1f; }
+      .h1 { font-size: 24px; font-weight: 700; }
+      .sub { font-size: 14px; fill: #55595f; }
+      .lbl { font-size: 13px; font-weight: 700; }
+      .txt { font-size: 12.5px; fill: #3a3d42; }
+      .small { font-size: 11.5px; fill: #55595f; }
+      .pin-on { font-size: 13px; font-weight: 700; fill: #ffffff; }
+      .pin-off { font-size: 10px; fill: #8796a8; }
+      .gpio { font-size: 10.5px; fill: #6e7179; }
+      .board { font-size: 9px; fill: #9fb0c3; }
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+      .w { fill: none; stroke-width: 3; stroke-linejoin: round; stroke-linecap: round; }
+      .red { stroke: #e5484d; }
+      .yel { stroke: #e8a200; }
+      .grn { stroke: #2f9e5e; }
+      .gnd { stroke: #26282c; }
+      .pad-on { fill: #e2b93b; }
+      .pad-off { fill: #7d6d38; }
+      .res { fill: #ffffff; stroke: #3a3d42; stroke-width: 2; }
+      .led { stroke: #3a3d42; stroke-width: 1.5; stroke-linejoin: round; }
+      .bar { stroke: #3a3d42; stroke-width: 2.5; }
+      .ray { stroke: #6e7179; stroke-width: 1.5; fill: none; }
+      .housing { fill: #f6f7f9; stroke: #c3c8cf; stroke-dasharray: 6 4; }
+    </style>
+    <marker id="kiir" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#6e7179"/>
+    </marker>
+    <symbol id="hoiatus" viewBox="0 0 12 11">
+      <path d="M6 0.5 L11.5 10.5 H0.5 Z" fill="#f59e0b"/>
+      <rect x="5.3" y="3.6" width="1.4" height="3.8" fill="#ffffff"/>
+      <rect x="5.3" y="8.2" width="1.4" height="1.3" fill="#ffffff"/>
+    </symbol>
+  </defs>
+
+  <rect width="1120" height="760" rx="16" fill="#ffffff"/>
+
+  <text x="40" y="48" class="h1">Elektriskeem: üks füüsiline foor</text>
+  <text x="40" y="74" class="sub">ESP8266 arendusplaat NodeMCU 1.0 (ESP-12E) · 5 LED-i · 5 takistit 220 Ω · toide ja andmed sama USB-kaabliga</text>
+
+  <text x="40" y="122" class="lbl">Ühendused</text>
+  <text x="40" y="146" class="small">Tuli</text>
+  <text x="212" y="146" class="small">Viik</text>
+  <text x="252" y="146" class="small">GPIO</text>
+  <line x1="40" y1="155" x2="296" y2="155" stroke="#e1e3e8"/>
+  <circle cx="47" cy="172" r="5.5" fill="#e5484d"/>
+  <text x="60" y="176" class="txt">Jalakäijate punane</text>
+  <text x="212" y="176" class="lbl">D1</text>
+  <text x="252" y="176" class="txt">5</text>
+  <circle cx="47" cy="196" r="5.5" fill="#2f9e5e"/>
+  <text x="60" y="200" class="txt">Jalakäijate roheline</text>
+  <text x="212" y="200" class="lbl">D2</text>
+  <text x="252" y="200" class="txt">4</text>
+  <circle cx="47" cy="220" r="5.5" fill="#e5484d"/>
+  <text x="60" y="224" class="txt">Autode punane</text>
+  <text x="212" y="224" class="lbl">D3</text>
+  <text x="252" y="224" class="txt">0</text>
+  <use href="#hoiatus" x="266" y="214" width="12" height="11"/>
+  <circle cx="47" cy="244" r="5.5" fill="#ffd23f" stroke="#e8a200"/>
+  <text x="60" y="248" class="txt">Autode kollane</text>
+  <text x="212" y="248" class="lbl">D4</text>
+  <text x="252" y="248" class="txt">2</text>
+  <use href="#hoiatus" x="266" y="238" width="12" height="11"/>
+  <circle cx="47" cy="268" r="5.5" fill="#2f9e5e"/>
+  <text x="60" y="272" class="txt">Autode roheline</text>
+  <text x="212" y="272" class="lbl">D5</text>
+  <text x="252" y="272" class="txt">14</text>
+  <circle cx="47" cy="292" r="5.5" fill="#26282c"/>
+  <text x="60" y="296" class="txt">Kõigi LED-ide miinus</text>
+  <text x="212" y="296" class="lbl">GND</text>
+  <text x="252" y="296" class="txt">–</text>
+
+  <text x="40" y="350" class="lbl">Mitu füüsilist foori</text>
+  <text x="40" y="372" class="txt">Iga foor on eraldi plaat sama skeemi ja</text>
+  <text x="40" y="390" class="txt">sama püsivaraga, igaüks oma USB-pordis.</text>
+  <text x="40" y="408" class="txt">Millist foori plaat näitab, valitakse</text>
+  <text x="40" y="426" class="txt">veebilehel.</text>
+
+  <rect x="320" y="96" width="200" height="560" rx="12" fill="#25303e"/>
+  <rect x="376" y="104" width="88" height="184" rx="3" fill="#1b2430" stroke="#3b4a5c"/>
+  <polyline points="390,126 390,112 402,112 402,126 414,126 414,112 426,112 426,126 438,126 438,112 450,112 450,126" fill="none" stroke="#d4af37" stroke-width="2.5"/>
+  <rect x="384" y="136" width="72" height="144" rx="3" fill="#c9ced4" stroke="#9aa1a9"/>
+  <text x="420" y="204" text-anchor="middle" font-size="12" font-weight="700" style="fill:#2b2f36">ESP-12E</text>
+  <text x="420" y="220" text-anchor="middle" font-size="10" style="fill:#4b5058">ESP8266</text>
+  <text x="420" y="330" text-anchor="middle" class="pin-on">NodeMCU 1.0</text>
+  <rect x="398" y="508" width="44" height="40" rx="3" fill="#0f141a"/>
+  <text x="420" y="564" text-anchor="middle" class="board">USB ↔ UART</text>
+  <rect x="346" y="610" width="16" height="16" rx="3" fill="#d9dde2"/>
+  <circle cx="354" cy="618" r="4.5" fill="#3a3d42"/>
+  <text x="354" y="642" text-anchor="middle" class="board">RST</text>
+  <rect x="478" y="610" width="16" height="16" rx="3" fill="#d9dde2"/>
+  <circle cx="486" cy="618" r="4.5" fill="#3a3d42"/>
+  <text x="486" y="642" text-anchor="middle" class="board">FLASH</text>
+  <rect x="398" y="640" width="44" height="26" rx="4" fill="#b9bfc6" stroke="#8a9099"/>
+
+  <g class="pad-off">
+    <rect x="324" y="144" width="12" height="12" rx="2"/>
+    <rect x="324" y="176" width="12" height="12" rx="2"/>
+    <rect x="324" y="208" width="12" height="12" rx="2"/>
+    <rect x="324" y="240" width="12" height="12" rx="2"/>
+    <rect x="324" y="272" width="12" height="12" rx="2"/>
+    <rect x="324" y="304" width="12" height="12" rx="2"/>
+    <rect x="324" y="336" width="12" height="12" rx="2"/>
+    <rect x="324" y="368" width="12" height="12" rx="2"/>
+    <rect x="324" y="400" width="12" height="12" rx="2"/>
+    <rect x="324" y="432" width="12" height="12" rx="2"/>
+    <rect x="324" y="464" width="12" height="12" rx="2"/>
+    <rect x="324" y="496" width="12" height="12" rx="2"/>
+    <rect x="324" y="528" width="12" height="12" rx="2"/>
+    <rect x="324" y="560" width="12" height="12" rx="2"/>
+    <rect x="324" y="592" width="12" height="12" rx="2"/>
+    <rect x="504" y="144" width="12" height="12" rx="2"/>
+    <rect x="504" y="304" width="12" height="12" rx="2"/>
+    <rect x="504" y="336" width="12" height="12" rx="2"/>
+    <rect x="504" y="400" width="12" height="12" rx="2"/>
+    <rect x="504" y="432" width="12" height="12" rx="2"/>
+    <rect x="504" y="464" width="12" height="12" rx="2"/>
+    <rect x="504" y="496" width="12" height="12" rx="2"/>
+    <rect x="504" y="528" width="12" height="12" rx="2"/>
+    <rect x="504" y="592" width="12" height="12" rx="2"/>
+  </g>
+  <g class="pad-on">
+    <rect x="504" y="176" width="12" height="12" rx="2"/>
+    <rect x="504" y="208" width="12" height="12" rx="2"/>
+    <rect x="504" y="240" width="12" height="12" rx="2"/>
+    <rect x="504" y="272" width="12" height="12" rx="2"/>
+    <rect x="504" y="368" width="12" height="12" rx="2"/>
+    <rect x="504" y="560" width="12" height="12" rx="2"/>
+  </g>
+  <g class="pin-off">
+    <text x="342" y="154">A0</text>
+    <text x="342" y="186">RSV</text>
+    <text x="342" y="218">RSV</text>
+    <text x="342" y="250">SD3</text>
+    <text x="342" y="282">SD2</text>
+    <text x="342" y="314">SD1</text>
+    <text x="342" y="346">CMD</text>
+    <text x="342" y="378">SD0</text>
+    <text x="342" y="410">CLK</text>
+    <text x="342" y="442">GND</text>
+    <text x="342" y="474">3V3</text>
+    <text x="342" y="506">EN</text>
+    <text x="342" y="538">RST</text>
+    <text x="342" y="570">GND</text>
+    <text x="342" y="602">Vin</text>
+  </g>
+  <g class="pin-off" text-anchor="end">
+    <text x="498" y="154">D0</text>
+    <text x="498" y="314">3V3</text>
+    <text x="498" y="346">GND</text>
+    <text x="498" y="410">D6</text>
+    <text x="498" y="442">D7</text>
+    <text x="498" y="474">D8</text>
+    <text x="498" y="506">RX</text>
+    <text x="498" y="538">TX</text>
+    <text x="498" y="602">3V3</text>
+  </g>
+  <g class="pin-on" text-anchor="end">
+    <text x="498" y="186.5">D1</text>
+    <text x="498" y="218.5">D2</text>
+    <text x="498" y="250.5">D3</text>
+    <text x="498" y="282.5">D4</text>
+    <text x="498" y="378.5">D5</text>
+    <text x="498" y="570.5">GND</text>
+  </g>
+
+  <g class="gpio">
+    <text x="524" y="174">GPIO5</text>
+    <text x="524" y="206">GPIO4</text>
+    <text x="524" y="238">GPIO0</text>
+    <text x="524" y="270">GPIO2</text>
+    <text x="524" y="366">GPIO14</text>
+  </g>
+  <use href="#hoiatus" x="559" y="228" width="12" height="11"/>
+  <use href="#hoiatus" x="559" y="260" width="12" height="11"/>
+
+  <rect x="774" y="154" width="154" height="108" rx="14" class="housing"/>
+  <text x="774" y="145" class="lbl">Jalakäijate foor</text>
+  <rect x="774" y="302" width="154" height="158" rx="14" class="housing"/>
+  <text x="774" y="293" class="lbl">Autode foor</text>
+
+  <path class="w red" d="M516 182 H676"/>
+  <path class="w red" d="M726 182 H800"/>
+  <path class="w grn" d="M516 214 H632 V234 H676"/>
+  <path class="w grn" d="M726 234 H800"/>
+  <path class="w red" d="M516 246 H612 V330 H676"/>
+  <path class="w red" d="M726 330 H800"/>
+  <path class="w yel" d="M516 278 H592 V382 H676"/>
+  <path class="w yel" d="M726 382 H800"/>
+  <path class="w grn" d="M516 374 H572 V434 H676"/>
+  <path class="w grn" d="M726 434 H800"/>
+
+  <path class="w gnd" d="M822 182 H940 V566 H516"/>
+  <path class="w gnd" d="M822 234 H940"/>
+  <path class="w gnd" d="M822 330 H940"/>
+  <path class="w gnd" d="M822 382 H940"/>
+  <path class="w gnd" d="M822 434 H940"/>
+  <g fill="#26282c">
+    <circle cx="940" cy="234" r="4.5"/>
+    <circle cx="940" cy="330" r="4.5"/>
+    <circle cx="940" cy="382" r="4.5"/>
+    <circle cx="940" cy="434" r="4.5"/>
+  </g>
+  <text x="728" y="556" text-anchor="middle" class="small">kõigi LED-ide miinus (katood) → GND</text>
+
+  <g>
+    <rect x="676" y="174" width="50" height="16" rx="2" class="res"/>
+    <rect x="676" y="226" width="50" height="16" rx="2" class="res"/>
+    <rect x="676" y="322" width="50" height="16" rx="2" class="res"/>
+    <rect x="676" y="374" width="50" height="16" rx="2" class="res"/>
+    <rect x="676" y="426" width="50" height="16" rx="2" class="res"/>
+  </g>
+  <g class="small" text-anchor="middle">
+    <text x="701" y="168">220 Ω</text>
+    <text x="701" y="220">220 Ω</text>
+    <text x="701" y="316">220 Ω</text>
+    <text x="701" y="368">220 Ω</text>
+    <text x="701" y="420">220 Ω</text>
+  </g>
+
+  <path d="M800 171 V193 L821 182 Z" fill="#ff5a52" class="led"/>
+  <path d="M822 171 V193" class="bar"/>
+  <path d="M806 167 l8 -9" class="ray" marker-end="url(#kiir)"/>
+  <path d="M814 169 l8 -9" class="ray" marker-end="url(#kiir)"/>
+  <text x="838" y="176" class="small">punane</text>
+
+  <path d="M800 223 V245 L821 234 Z" fill="#3ccf7a" class="led"/>
+  <path d="M822 223 V245" class="bar"/>
+  <path d="M806 219 l8 -9" class="ray" marker-end="url(#kiir)"/>
+  <path d="M814 221 l8 -9" class="ray" marker-end="url(#kiir)"/>
+  <text x="838" y="228" class="small">roheline</text>
+
+  <path d="M800 319 V341 L821 330 Z" fill="#ff5a52" class="led"/>
+  <path d="M822 319 V341" class="bar"/>
+  <path d="M806 315 l8 -9" class="ray" marker-end="url(#kiir)"/>
+  <path d="M814 317 l8 -9" class="ray" marker-end="url(#kiir)"/>
+  <text x="838" y="324" class="small">punane</text>
+
+  <path d="M800 371 V393 L821 382 Z" fill="#ffd23f" class="led"/>
+  <path d="M822 371 V393" class="bar"/>
+  <path d="M806 367 l8 -9" class="ray" marker-end="url(#kiir)"/>
+  <path d="M814 369 l8 -9" class="ray" marker-end="url(#kiir)"/>
+  <text x="838" y="376" class="small">kollane</text>
+
+  <path d="M800 423 V445 L821 434 Z" fill="#3ccf7a" class="led"/>
+  <path d="M822 423 V445" class="bar"/>
+  <path d="M806 419 l8 -9" class="ray" marker-end="url(#kiir)"/>
+  <path d="M814 421 l8 -9" class="ray" marker-end="url(#kiir)"/>
+  <text x="838" y="428" class="small">roheline</text>
+
+  <rect x="956" y="124" width="148" height="296" rx="12" fill="#f6f7f9"/>
+  <text x="970" y="148" class="lbl">LED-i jalad</text>
+  <path d="M1008 216 V182 a22 22 0 0 1 44 0 V216 Z" fill="#ffe1df" stroke="#c94b45" stroke-width="1.5"/>
+  <rect x="1002" y="216" width="56" height="8" fill="#ffe1df" stroke="#c94b45" stroke-width="1.5"/>
+  <path d="M1020 224 V306" stroke="#8a8f98" stroke-width="3" stroke-linecap="round"/>
+  <path d="M1040 224 V288" stroke="#8a8f98" stroke-width="3" stroke-linecap="round"/>
+  <text x="1020" y="326" text-anchor="middle" class="lbl">+</text>
+  <text x="1040" y="308" text-anchor="middle" class="lbl">–</text>
+  <text x="970" y="352" class="small">pikk jalg: + anood</text>
+  <text x="970" y="368" class="small">→ takisti poole</text>
+  <text x="970" y="390" class="small">lühike jalg: – katood</text>
+  <text x="970" y="406" class="small">→ GND poole</text>
+
+  <rect x="80" y="456" width="160" height="104" rx="8" fill="#2b2f36"/>
+  <rect x="88" y="464" width="144" height="86" rx="3" fill="#3b4a5e"/>
+  <text x="160" y="500" text-anchor="middle" font-size="12" class="mono" style="fill:#ffffff">index.html</text>
+  <circle cx="146" cy="522" r="5" fill="#ff5a52"/>
+  <circle cx="160" cy="522" r="5" fill="#ffd23f"/>
+  <circle cx="174" cy="522" r="5" fill="#3ccf7a"/>
+  <path d="M64 560 H256 L246 574 H74 Z" fill="#c5c9cf"/>
+  <text x="160" y="600" text-anchor="middle" class="lbl">Arvuti</text>
+  <text x="160" y="618" text-anchor="middle" class="small">Chrome või Edge</text>
+  <path d="M420 666 V704 H274 V566 H252" fill="none" stroke="#7a7f87" stroke-width="6" stroke-linejoin="round" stroke-linecap="round"/>
+  <text x="347" y="728" text-anchor="middle" class="small">USB-andmekaabel: 5 V toide + andmed 115200 baudi</text>
+
+  <rect x="540" y="598" width="548" height="140" rx="12" fill="#fff8e6" stroke="#f0c36d"/>
+  <text x="558" y="622" class="lbl">Meeldejätmiseks</text>
+  <text x="558" y="646" class="txt">• Viik HIGH → LED põleb. 220 Ω hoiab voolu ≈ 6 mA (viik talub 12 mA).</text>
+  <text x="558" y="668" class="txt">• LED-i pikk jalg (+) läheb takisti poole, lühike jalg (–) GND poole.</text>
+  <text x="558" y="690" class="txt">• D3 ja D4 peavad plaadi käivitumisel olema HIGH. Kui plaat ei käivitu,</text>
+  <text x="570" y="708" class="txt">tõsta autode punane D7-le ja kollane D6-le ning muuda sketšis kaks rida</text>
+  <text x="570" y="726" class="txt">(vt docs/elektriskeem.md).</text>
+</svg>

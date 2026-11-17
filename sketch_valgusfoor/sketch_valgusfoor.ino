@@ -1,18 +1,23 @@
 //  Valgusfoor (ESP8266): füüsiline foor, mis peegeldab üht ristmiku foori.
 //  Millist foori plaat näitab, valitakse veebilehel (index.html); kogu foorikava on lehel.
+//  Plaat jätab valitud foori välkmällu meelde, nii et see säilib ka pärast taaskäivitust.
 //
 //  Käsud lehelt (iga käsk eraldi real, 115200 baudi):
-//    MAARA:F3,U8   – plaat näitab autode foori F3 ja ülekäiku Ü8 (ainult info)
+//    KES?          – küsib plaadi tunnust ja meelde jäetud foori
+//    MAARA:F3,U8   – plaat näitab autode foori F3 ja ülekäiku Ü8 ning jätab selle meelde
 //    TULED:00110   – autode punane, kollane, roheline, jalakäijate punane, roheline;
 //                    0 = kustus, 1 = põleb, 2 = vilgub. Leht kordab olekut iga sekund.
 //  Vastused lehele:
-//    READY         – plaat käivitus
-//    OK <käsk>     – käsk täideti (TULED puhul ainult siis, kui olek muutus)
-//    VIGA <käsk>   – tundmatu käsk või vale väärtus
-//    RIKE          – lehelt pole 5 s midagi tulnud, autodele vilkuv kollane
+//    READY               – plaat käivitus
+//    SEADE:3F2A1C,F3,U8  – vastus KES?-le: kiibi number ja meelde jäetud foor ("-" = pole)
+//    OK <käsk>           – käsk täideti (TULED puhul ainult siis, kui olek muutus)
+//    VIGA <käsk>         – tundmatu käsk või vale väärtus
+//    RIKE                – lehelt pole 5 s midagi tulnud, autodele vilkuv kollane
+
+#include <EEPROM.h>
 
 // D3 (GPIO0) ja D4 (GPIO2) mõjutavad käivitumist ning D4 küljes on plaadi enda LED.
-// Kui plaat ei käivitu, tõsta LED-id viikudele D5, D6, D7.
+// Kui plaat ei käivitu, tõsta autode punane D7-le ja kollane D6-le (docs/elektriskeem.md).
 const int carRed = D3;
 const int carYellow = D4;
 const int carGreen = D5;
@@ -25,8 +30,13 @@ const unsigned long BLINK_MS = 1000;
 const char L_ON = '1';
 const char L_BLINK = '2';
 
+const int MEMORY_SIZE = 32;
+const byte MEMORY_MARK = 0xA7; // mälu algus: määrang on salvestatud
+const char NOT_ASSIGNED[] = "-,-";
+
 char lights[6] = "02000";
-String assigned = "-";
+char boardId[9];
+String assigned = NOT_ASSIGNED;
 bool linkOk = false;
 unsigned long lastMessage = 0;
 unsigned long blinkStart = 0; // vilkumine algab oleku saabumisel, et käia lehega samas taktis
@@ -53,9 +63,32 @@ bool validLights(const String &v) {
   return true;
 }
 
+String loadAssignment() {
+  if (EEPROM.read(0) != MEMORY_MARK) return NOT_ASSIGNED;
+  String value = "";
+  for (int i = 1; i < MEMORY_SIZE; i++) {
+    char c = EEPROM.read(i);
+    if (c == 0) break;
+    if (c < ' ' || c > '~') return NOT_ASSIGNED;
+    value += c;
+  }
+  return value.length() > 0 ? value : String(NOT_ASSIGNED);
+}
+
+void saveAssignment(const String &value) {
+  EEPROM.write(0, MEMORY_MARK);
+  for (unsigned int i = 0; i < value.length(); i++) EEPROM.write(1 + i, value[i]);
+  EEPROM.write(1 + value.length(), 0);
+  EEPROM.commit();
+}
+
 void handleCommand(String cmd) {
   cmd.trim();
   if (cmd.length() == 0) return;
+  if (cmd == "KES?") {
+    Serial.println(String("SEADE:") + boardId + "," + assigned);
+    return;
+  }
   int colon = cmd.indexOf(':');
   if (colon < 0) {
     Serial.println("VIGA " + cmd);
@@ -75,7 +108,10 @@ void handleCommand(String cmd) {
     }
   } else if (name == "MAARA" && value.length() > 0 && value.length() <= 20) {
     lastMessage = millis();
-    assigned = value;
+    if (value != assigned) { // välkmällu kirjutame ainult muutuse
+      assigned = value;
+      saveAssignment(assigned);
+    }
     Serial.println("OK " + cmd);
   } else {
     Serial.println("VIGA " + cmd);
@@ -104,6 +140,10 @@ void setup() {
   pinMode(pedRed, OUTPUT);
   pinMode(pedGreen, OUTPUT);
   setLights(false, false, false, false, false);
+
+  snprintf(boardId, sizeof(boardId), "%06lX", (unsigned long)ESP.getChipId());
+  EEPROM.begin(MEMORY_SIZE);
+  assigned = loadAssignment();
 
   Serial.println(); // eraldab käivitusprügi READY-st
   Serial.println("READY");

@@ -73,6 +73,8 @@
     onChange: renderDevices,
     onLog: appendLog,
     defaultLight: (taken) => J.LIGHTS.find((l) => !taken.includes(l.id)) || J.LIGHTS[0],
+    isLight: (id) => id in lightById,
+    isCrossing: (id) => id in crossingById,
   });
 
   function step(now) {
@@ -243,21 +245,25 @@
     box.textContent = "";
     if (!devices.devices.length) {
       box.innerHTML =
-        '<p class="vaike">Ühenda ESP8266 USB-kaabliga ja vajuta „+ Ühenda ESP“. Seejärel vali, millist foori see näitab.</p>';
+        '<p class="vaike">Ühenda ESP8266 USB-kaabliga ja vajuta „+ Ühenda ESP“. Seejärel vali, millist foori see näitab – plaat jätab selle meelde.</p>';
     }
     for (const dev of devices.devices) {
       const el = document.createElement("div");
       el.className = "seade";
-      const statusText = {
-        connecting: "ühendan…",
-        connected: dev.fault ? "ühendatud, RIKE" : "ühendatud",
-        lost: "ühendus katkes",
-        error: "viga",
-      }[dev.status];
-      const statusClass = dev.status === "connected" && !dev.fault ? "ok" : dev.status === "connecting" ? "" : "viga";
+      const identifying = dev.status === "connected" && !dev.identified;
+      const statusText = identifying
+        ? "tuvastan…"
+        : {
+            connecting: "ühendan…",
+            connected: dev.fault ? "ühendatud, RIKE" : "ühendatud",
+            lost: "ühendus katkes",
+            error: "viga",
+          }[dev.status];
+      const statusClass =
+        identifying || dev.status === "connecting" ? "" : dev.status === "connected" && !dev.fault ? "ok" : "viga";
       el.innerHTML = `
         <div class="seade-pais">
-          <span class="seade-nimi"><span class="seade-nr">${dev.number}</span>${dev.name}</span>
+          <span class="seade-nimi"><span class="seade-nr">${dev.number}</span>${dev.name}${dev.boardId ? `<span class="seade-id" title="Plaadi kiibi number">${dev.boardId}</span>` : ""}</span>
           <span class="seade-olek ${statusClass}">${statusText}</span>
           <span class="seade-nupud"></span>
         </div>
@@ -279,6 +285,7 @@
         const light = lightById[carSelect.value];
         // Autode foori vahetusel tuleb kaasa ka selle foori jalakäijate paar
         devices.assign(dev, light ? light.id : null, light ? light.pair : dev.crossing);
+        pedSelect.value = dev.crossing || "";
       });
       pedSelect.addEventListener("change", () => devices.assign(dev, undefined, pedSelect.value || null));
       for (const s of [carSelect, pedSelect]) {

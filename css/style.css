@@ -646,6 +646,11 @@ code {
   font-weight: 700;
 }
 
+.seade-id {
+  font: 500 11px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  color: var(--vaike);
+}
+
 .seade-olek {
   font-size: 12px;
   color: var(--vaike);

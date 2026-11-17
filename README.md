@@ -12,13 +12,16 @@ ESP8266 plaat on füüsiline foor, mis peegeldab ühte ristmiku foori – millis
 
 1. Ava `index.html` **Chrome'is või Edge'is** (USB-ühendus ehk Web Serial töötab ainult neis).
    Topeltklõps failil sobib; teine võimalus on `python3 -m http.server` ja aadress `http://localhost:8000`.
-2. Ühenda ESP8266 USB-kaabliga, vajuta **„+ Ühenda ESP“** ja vali port.
+2. Ühenda ESP8266 USB-kaabliga, vajuta **„+ Ühenda ESP“** ja vali port. Iga järgmise plaadi jaoks
+   korda sama – iga plaat võib näidata eri foori.
 3. Vali seadme juures, millist autode foori ja ülekäiku see näitab. Teine võimalus: klõpsa
-   kaardil foori ja vajuta **„Näita seadmel N“**.
+   kaardil foori ja vajuta **„Näita seadmel N“**. Plaat jätab valiku meelde: pärast lehe uuesti
+   laadimist või USB-st välja ja tagasi panemist näitab see sama foori.
 
 Plaadi püsivara on `sketch_valgusfoor/sketch_valgusfoor.ino` (Arduino IDE, ESP8266 plaatide pakett,
 plaat nt „NodeMCU 1.0 (ESP-12E Module)“). LED-id: D3 autode punane, D4 autode kollane,
-D5 autode roheline, D1 jalakäijate punane, D2 jalakäijate roheline.
+D5 autode roheline, D1 jalakäijate punane, D2 jalakäijate roheline. Skeem ja komponendid:
+[docs/elektriskeem.md](docs/elektriskeem.md).
 
 ## Režiimid
 
@@ -54,6 +57,8 @@ Faasid (millised autode foorid on korraga rohelised):
   et vastuolulised suunad ei saa kunagi korraga rohelist
 - `test/devices.test.js` – USB-side test võltsitud plaadiga
 - `sketch_valgusfoor/` – ESP8266 püsivara
+- `docs/elektriskeem.md` – elektriskeem ja komponendid
+- `docs/andmevoog.md` – andmete liikumise skeem ja pakettide näited
 
 Testid (vaja Node.js-i):
 
@@ -68,13 +73,15 @@ node test/devices.test.js
 ## Side lehe ja plaadi vahel
 
 Tekstiread üle USB jadapordi, 115200 baudi. Plaat ei tea ristmikust midagi – leht ütleb talle,
-millised tuled põlevad.
+millised tuled põlevad. Plaat jätab meelde ainult selle, millist foori ta näitab.
 
 | Suund | Käsk | Tähendus |
 |---|---|---|
-| leht → plaat | `MAARA:F3,U8` | plaat näitab autode foori F3 ja ülekäiku Ü8 (Ü asemel U) |
+| leht → plaat | `KES?` | küsib plaadi kiibi numbrit ja seda, millist foori plaat mäletab (saadetakse ühendamisel) |
+| leht → plaat | `MAARA:F3,U8` | plaat näitab autode foori F3 ja ülekäiku Ü8 (Ü asemel U) ja jätab selle meelde |
 | leht → plaat | `TULED:00110` | autode punane, kollane, roheline, jalakäijate punane, roheline; 0 kustus, 1 põleb, 2 vilgub. Saadetakse kohe, kui olek muutub, ja iga sekund uuesti |
-| plaat → leht | `READY` | plaat käivitus – leht saadab `MAARA` ja `TULED` uuesti |
+| plaat → leht | `READY` | plaat käivitus – leht saadab `MAARA` ja `TULED` uuesti (uuelt plaadilt küsib enne `KES?`) |
+| plaat → leht | `SEADE:3F2A1C,F3,U8` | vastus `KES?`-le: kiibi number ja meelde jäetud foor; `-` tähendab „pole“ |
 | plaat → leht | `OK <käsk>` | käsk täideti (`TULED` puhul ainult siis, kui olek muutus) |
 | plaat → leht | `VIGA <käsk>` | tundmatu käsk või vale väärtus |
 | plaat → leht | `RIKE` | lehelt pole 5 s midagi tulnud – plaat vilgutab autodele kollast |
@@ -92,7 +99,8 @@ Näide: plaat näitab foori F3 ja ülekäiku Ü8, ristmik vahetab faasi B → C 
 ← OK TULED:00110
 ```
 
-Lehel saab kogu side logi salvestada („Salvesta logi“).
+Lehel saab kogu side logi salvestada („Salvesta logi“). Skeem, baidid ja mitme plaadi näide:
+[docs/andmevoog.md](docs/andmevoog.md).
 
 ## Eeldused, mida kontrollida
 
@@ -115,7 +123,7 @@ muuda `js/junction.js` ja käivita ohutustest.
 - [ ] Toimiv lahendus (esitlus 30. novembril algaval nädalal)
 - [x] Hommikune, õhtune ja öörežiim (tarkvaras)
 - [ ] Vähemalt 1 kaubandusliku välimusega, põrutuskindel (30 cm kukkumine) komponent
-- [ ] Elektriskeem
-- [ ] Andmete liikumise skeem + pakettide näited
+- [x] Elektriskeem – [docs/elektriskeem.md](docs/elektriskeem.md)
+- [x] Andmete liikumise skeem + pakettide näited – [docs/andmevoog.md](docs/andmevoog.md)
 - [ ] Installijuhend
 - [ ] Video (üldvaade + detailid)
