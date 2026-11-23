@@ -10,6 +10,9 @@ ESP8266 plaat on füüsiline foor, mis peegeldab ühte ristmiku foori – millis
 
 ## Käivitamine
 
+Täielik juhend nullist (Arduino IDE, püsivara, plaadid, mitu arvutit, probleemid):
+[docs/installijuhend.md](docs/installijuhend.md). Lühidalt:
+
 1. Ava `index.html` **Chrome'is või Edge'is** (USB-ühendus ehk Web Serial töötab ainult neis).
    Topeltklõps failil sobib; teine võimalus on `python3 -m http.server` ja aadress `http://localhost:8000`.
 2. Ühenda ESP8266 USB-kaabliga, vajuta **„+ Ühenda ESP“** ja vali port. Iga järgmise plaadi jaoks
@@ -87,6 +90,7 @@ Faasid (millised autode foorid on korraga rohelised):
 - `sketch_valgusfoor/` – ESP8266 püsivara
 - `docs/elektriskeem.md` – elektriskeem ja komponendid
 - `docs/andmevoog.md` – andmete liikumise skeem ja pakettide näited
+- `docs/installijuhend.md` – installijuhend
 
 Testid (vaja Node.js-i):
 
@@ -161,5 +165,5 @@ muuda `js/junction.js` ja käivita ohutustest.
 - [ ] Vähemalt 1 kaubandusliku välimusega, põrutuskindel (30 cm kukkumine) komponent
 - [x] Elektriskeem – [docs/elektriskeem.md](docs/elektriskeem.md)
 - [x] Andmete liikumise skeem + pakettide näited – [docs/andmevoog.md](docs/andmevoog.md)
-- [ ] Installijuhend
+- [x] Installijuhend – [docs/installijuhend.md](docs/installijuhend.md)
 - [ ] Video (üldvaade + detailid)

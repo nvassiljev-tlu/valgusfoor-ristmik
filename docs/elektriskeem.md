@@ -53,7 +53,7 @@ jaoks kasuta toitega jaoturit või arvuti eri porte.
 ## Kontroll enne veebilehe kasutamist
 
 1. Laadi `sketch_valgusfoor/sketch_valgusfoor.ino` plaadile.
-2. Ava Arduino IDE Serial Monitor: 115200 baudi, reavahetus „Newline“. Plaat kirjutab `READY` ja
+2. Ava Arduino IDE Serial Monitor: 115200 baudi, reavahetus „New Line“. Plaat kirjutab `READY` ja
    autode kollane vilgub.
 3. Saada `KES?` – plaat vastab oma kiibi numbriga, nt `SEADE:3F2A1C,-,-` (foori pole veel määratud).
 4. Saada `TULED:11111` – kõik viis LED-i põlevad. `TULED:22222` – kõik vilguvad, `TULED:00000` – kõik
