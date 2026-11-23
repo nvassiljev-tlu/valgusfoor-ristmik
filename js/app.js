@@ -4,68 +4,22 @@
   "use strict";
 
   const J = globalThis.JUNCTION;
-  const { Controller, CAR_STATE_NAMES, PED_STATE_NAMES, PED_GREEN } = globalThis.Signals;
+  const { CAR_STATE_NAMES, PED_STATE_NAMES, PED_GREEN } = globalThis.Signals;
+  const { SyncedClock, SyncSession, TIME_SOURCES, relayTimeSource, scheduledMode, randomId } = globalThis.Sync;
   const $ = (id) => document.getElementById(id);
   const lightById = Object.fromEntries(J.LIGHTS.map((l) => [l.id, l]));
   const crossingById = Object.fromEntries(J.CROSSINGS.map((c) => [c.id, c]));
 
-  // Õige kellaaeg internetist; automaatrežiim valib selle järgi režiimi
-  const TIME_SOURCES = [
-    {
-      name: "cloudflare.com",
-      url: "https://www.cloudflare.com/cdn-cgi/trace",
-      parse: async (res) => parseFloat((await res.text()).match(/^ts=([\d.]+)/m)[1]) * 1000,
-    },
-    {
-      name: "time.now",
-      url: "https://time.now/developer/api/timezone/Europe/Tallinn",
-      parse: async (res) =>
-        Date.parse((await res.json()).utc_datetime.replace(/(\.\d{3})\d+/, "$1")),
-    },
-  ];
-  let clockOffset = 0;
-  const wallClock = () => new Date(Date.now() + clockOffset);
-
-  async function syncClock() {
-    const el = $("ajaAllikas");
-    for (const src of TIME_SOURCES) {
-      try {
-        const sent = Date.now();
-        const res = await fetch(src.url, { cache: "no-store", signal: AbortSignal.timeout(4000) });
-        const time = await src.parse(res);
-        if (!isFinite(time)) throw new Error("vale vastus");
-        const received = Date.now();
-        // Server saatis aja umbes poole päringu ajaga varem, kui vastus kohale jõudis
-        clockOffset = Math.round(time + (received - sent) / 2 - received);
-        el.textContent = `aeg: ${src.name} (arvuti kell ${Math.abs(clockOffset)} ms ${clockOffset > 0 ? "maas" : "ees"})`;
-        el.className = "vaike";
-        return;
-      } catch (e) {
-        // proovime järgmist allikat
-      }
-    }
-    clockOffset = 0;
-    el.textContent = "internet ei vastanud – kasutan arvuti kella";
-    el.className = "vaike hoiatus";
-  }
-
-  function scheduledMode(date) {
-    const minutes = date.getHours() * 60 + date.getMinutes();
-    let mode = J.SCHEDULE[0].mode;
-    for (const entry of J.SCHEDULE) {
-      const [h, m] = entry.from.split(":").map(Number);
-      if (h * 60 + m <= minutes) mode = entry.mode;
-    }
-    return mode;
-  }
-
-  let auto = true;
-  let manualMode = "paev";
+  // Kõik arvutid arvutavad foorid sama, internetist sünkroniseeritud kella järgi (vt js/sync.js)
+  let session = null;
+  let clockReady = false;
+  const clock = new SyncedClock({
+    onJump: () => session && session.rebuild(),
+    onStatus: renderClock,
+  });
+  session = new SyncSession({ clock, onChange: renderSync });
+  const wallClock = () => new Date(clock.now());
   let selected = null;
-  const wantedMode = () => (auto ? scheduledMode(wallClock()) : manualMode);
-
-  // Kontroller kasutab monotoonset kella, et kella sünkroniseerimine foore ei hüpitaks
-  const controller = new Controller(performance.now(), wantedMode());
 
   const map = createMap($("kaart"), select);
   const timeline = createTimeline($("ajajoon"));
@@ -77,37 +31,132 @@
     isCrossing: (id) => id in crossingById,
   });
 
-  function step(now) {
-    controller.setMode(wantedMode(), now);
-    controller.update(now);
-  }
-
-  // Seadmetele saatmine käib taimeriga, sest requestAnimationFrame seisab, kui vahekaart pole nähtav
+  // Seadmetele saatmine käib taimeriga, sest requestAnimationFrame seisab, kui vahekaart pole nähtav.
+  // Enne kella sünkroniseerimist ja ruumi oleku saamist plaatidele midagi ei saadeta.
   setInterval(() => {
-    const now = performance.now();
-    step(now);
-    devices.tick(controller.states(now), now);
+    const now = clock.now();
+    session.advance(now);
+    if (clockReady && session.ready) devices.tick(session.controller.states(now), now);
   }, 50);
 
   function renderModeButtons() {
+    const s = session.pending || session.setting;
     for (const btn of document.querySelectorAll("[data-reziim]")) {
       const key = btn.dataset.reziim;
-      btn.setAttribute("aria-pressed", String(key === "auto" ? auto : !auto && key === manualMode));
+      btn.setAttribute("aria-pressed", String(key === "auto" ? s.auto : !s.auto && key === s.mode));
     }
-    const shown = auto ? scheduledMode(wallClock()) : manualMode;
+    const shown = s.auto ? scheduledMode(clock.now()) : s.mode;
     $("reziimiInfo").textContent =
-      (auto ? "Režiim vahetub ise kellaaja järgi. Praegu: " + J.MODES[shown].name + ". " : "") +
+      (s.auto ? "Režiim vahetub ise kellaaja järgi. Praegu: " + J.MODES[shown].name + ". " : "") +
       J.MODES[shown].description;
   }
   for (const btn of document.querySelectorAll("[data-reziim]")) {
     btn.addEventListener("click", () => {
       const key = btn.dataset.reziim;
-      auto = key === "auto";
-      if (!auto) manualMode = key;
-      step(performance.now());
+      session.requestMode(key === "auto", key === "auto" ? scheduledMode(clock.now()) : key);
       renderModeButtons();
     });
   }
+
+  function renderClock() {
+    const el = $("ajaAllikas");
+    const s = clock.status;
+    if (s.synced) {
+      el.textContent = `aeg: ${s.source} ±${s.accuracy} ms` + (s.failed ? " (viimane päring ebaõnnestus)" : "");
+      el.className = "vaike";
+    } else if (s.failed) {
+      el.textContent = "internet ei vastanud – kasutan arvuti kella";
+      el.className = "vaike hoiatus";
+    }
+  }
+
+  const store = {
+    get(key) {
+      try {
+        return localStorage.getItem(key);
+      } catch (e) {
+        return null;
+      }
+    },
+    set(key, value) {
+      try {
+        if (value === null) localStorage.removeItem(key);
+        else localStorage.setItem(key, value);
+      } catch (e) {}
+    },
+  };
+  const DEFAULT_SERVER = "https://ntfy.sh";
+  let roomError = "";
+
+  function joinRoom(code) {
+    const room = code.trim().toLowerCase();
+    const server = $("ruumServer").value.trim().replace(/\/+$/, "") || DEFAULT_SERVER;
+    roomError = "";
+    if (!/^[a-z0-9_-]{8,40}$/.test(room)) roomError = "Ruumi kood peab olema 8–40 märki: tähed, numbrid, - või _.";
+    else if (!/^https?:\/\/[^\s/]+(:\d+)?$/.test(server)) roomError = "Serveri aadress peab olema kujul https://ntfy.sh või http://192.168.1.5:8090.";
+    if (roomError) {
+      renderSync();
+      return;
+    }
+    $("ruumKood").value = room;
+    $("ruumServer").value = server;
+    store.set("ristmik.ruum", room);
+    store.set("ristmik.server", server);
+    clock.setSources(server === DEFAULT_SERVER ? TIME_SOURCES : [relayTimeSource(server), ...TIME_SOURCES]);
+    session.connect(server, room);
+  }
+
+  function leaveRoom() {
+    store.set("ristmik.ruum", null);
+    session.disconnect();
+    clock.setSources(TIME_SOURCES);
+  }
+
+  $("ruumNupp").addEventListener("click", () => (session.relay ? leaveRoom() : joinRoom($("ruumKood").value)));
+  $("ruumUus").addEventListener("click", () => joinRoom(randomId(10)));
+  $("ruumKood").addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && !session.relay) joinRoom($("ruumKood").value);
+  });
+
+  function renderSync() {
+    const on = !!session.relay;
+    $("ruumNupp").textContent = on ? "Lahku" : "Ühenda";
+    $("ruumUus").hidden = on;
+    $("ruumKood").disabled = on;
+    $("ruumServer").disabled = on;
+    const chip = $("syncKiip");
+    chip.textContent = {
+      off: "üksi",
+      connecting: "ühendan…",
+      connected: session.ready ? "ruumis" : "liitun…",
+      reconnecting: "ühendus katkes",
+      error: "viga",
+    }[session.status];
+    chip.className = "kiip" + (session.status === "connected" ? " ok" : session.status === "off" ? "" : " viga");
+    let info;
+    if (roomError) {
+      info = roomError;
+    } else if (!on) {
+      info =
+        "Automaatrežiimis on foorid kõigis arvutites samas taktis ka ilma ruumita (sama kell). " +
+        "Et ka käsitsi valitud režiim jõuaks teistesse arvutitesse, ühendage kõik arvutid sama koodiga ruumi.";
+    } else if (session.status === "connected") {
+      info =
+        `Ruumi kood: ${session.room}. Sisesta see teises arvutis ja vajuta „Ühenda“. ` +
+        "Režiimi muutus jõuab kõigisse arvutitesse ja hakkab kehtima samal hetkel." +
+        (session.error ? " " + session.error : "");
+    } else if (session.status === "connecting") {
+      info = "Ühendan releega…";
+    } else {
+      info =
+        `Relee ei vasta (${session.error || "ühendus katkes"}), proovin uuesti. ` +
+        "Automaatrežiim jääb ikka teiste arvutitega samasse takti.";
+    }
+    setText($("syncInfo"), info);
+    $("syncInfo").classList.toggle("hoiatus", !!roomError || session.status === "error" || session.status === "reconnecting");
+    renderModeButtons();
+  }
+
   $("ajakava").textContent =
     "Ajakava: " +
     J.SCHEDULE.map((entry, i) => {
@@ -352,10 +401,18 @@
   let changes = {};
   let changesAt = -Infinity;
 
+  let shownSetting = "";
+
   function frame() {
-    const now = performance.now();
-    step(now);
+    const now = clock.now();
+    session.advance(now);
+    const controller = session.controller;
     const st = controller.states(now);
+    const setting = JSON.stringify(session.pending || session.setting);
+    if (setting !== shownSetting) {
+      shownSetting = setting;
+      renderModeButtons();
+    }
     if (now - changesAt > 200) {
       changes = controller.nextChanges(now);
       changesAt = now;
@@ -396,6 +453,7 @@
   }
 
   function renderStatus(now, st) {
+    const controller = session.controller;
     const d = controller.describe(now);
     setText($("faasiNimi"), d.title);
     setText($("faasiInfo"), d.detail);
@@ -404,12 +462,17 @@
     $("edenemine").classList.toggle("oo", st.seg.type === "night");
     setText(
       $("kehtivReziim"),
-      J.MODES[controller.mode].name + (auto ? " · automaatne" : " · käsitsi"),
+      J.MODES[controller.mode].name + (session.setting.auto ? " · automaatne" : " · käsitsi"),
     );
     const wanted = controller.wanted;
+    const next = session.pending;
     setText(
       $("ootel"),
-      wanted !== controller.mode ? `→ ${J.MODES[wanted].name} (ohutult pärast praegust faasi)` : "",
+      next
+        ? `→ ${next.auto ? "automaatne" : J.MODES[next.mode].name} kõigis arvutites ${seconds(next.at - now)} pärast`
+        : wanted !== controller.mode
+          ? `→ ${J.MODES[wanted].name} (ohutult pärast praegust faasi)`
+          : "",
     );
   }
 
@@ -419,6 +482,16 @@
   map.setBase("skeem");
   requestAnimationFrame(frame);
   setInterval(renderModeButtons, 30000);
-  syncClock().then(renderModeButtons);
+  renderSync();
+  const savedServer = store.get("ristmik.server");
+  if (savedServer) $("ruumServer").value = savedServer;
+  const savedRoom = store.get("ristmik.ruum");
+  if (savedRoom) joinRoom(savedRoom);
+  Promise.race([clock.sync(), new Promise((resolve) => setTimeout(resolve, 3000))]).then(() => {
+    clockReady = true;
+    renderClock();
+    renderModeButtons();
+  });
+  clock.startAuto();
   devices.reconnectGranted();
 })();

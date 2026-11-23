@@ -575,6 +575,60 @@ code {
   color: #cfe3ff;
 }
 
+.kiip.ok {
+  background: #173d25;
+  color: #b9f5c9;
+}
+
+.kiip.viga {
+  background: #4a3410;
+  color: #ffd79a;
+}
+
+.ruum-rida {
+  display: flex;
+  gap: 6px;
+}
+
+input[type="text"],
+input[type="url"] {
+  font: inherit;
+  color: var(--tekst);
+  background: var(--plokk-2);
+  border: 1px solid var(--joon);
+  border-radius: 6px;
+  padding: 5px 8px;
+  min-width: 0;
+}
+
+input:focus-visible {
+  outline: 2px solid var(--aktsent);
+  outline-offset: 1px;
+}
+
+input:disabled {
+  opacity: 0.6;
+}
+
+.ruum-rida input {
+  flex: 1;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+.server-rida {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--vaike);
+}
+
+.server-rida input {
+  flex: 1;
+  font-size: 13px;
+}
+
 .faas {
   font-size: 20px;
   font-weight: 650;

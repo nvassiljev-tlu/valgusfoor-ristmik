@@ -72,6 +72,23 @@
         </section>
 
         <section class="plokk">
+          <div class="plokk-pais">
+            <h2>Mitu arvutit</h2>
+            <span id="syncKiip" class="kiip">üksi</span>
+          </div>
+          <div class="ruum-rida">
+            <input id="ruumKood" type="text" placeholder="ruumi kood" autocomplete="off" spellcheck="false" aria-label="Ruumi kood" />
+            <button type="button" id="ruumNupp">Ühenda</button>
+            <button type="button" id="ruumUus">Uus ruum</button>
+          </div>
+          <label class="server-rida">
+            Relee
+            <input id="ruumServer" type="url" value="https://ntfy.sh" spellcheck="false" />
+          </label>
+          <p id="syncInfo" class="vaike"></p>
+        </section>
+
+        <section class="plokk">
           <div class="praegu-rida">
             <h2>Praegu</h2>
             <span id="kehtivReziim" class="kiip"></span>
@@ -122,6 +139,7 @@
 
     <script src="js/junction.js"></script>
     <script src="js/controller.js"></script>
+    <script src="js/sync.js"></script>
     <script src="js/map.js"></script>
     <script src="js/timeline.js"></script>
     <script src="js/devices.js"></script>

@@ -48,6 +48,16 @@
   <text x="490" y="125" class="lbl">Kasutaja</text>
   <text x="490" y="145" class="txt">valib režiimi ja iga plaadi foori</text>
 
+  <marker id="nool-tagasi" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" markerUnits="userSpaceOnUse" orient="auto-start-reverse">
+    <path d="M0 0 L10 5 L0 10 z" fill="#4a5568"/>
+  </marker>
+  <rect x="40" y="104" width="220" height="104" rx="12" class="ext"/>
+  <text x="58" y="130" class="lbl">Teised arvutid</text>
+  <text x="58" y="149" class="small">relee: ntfy.sh või</text>
+  <text x="58" y="167" class="m11">server/relay.js</text>
+  <text x="58" y="191" class="m11">reziim · tere · olek</text>
+  <path class="arrow" d="M260 156 H284 V252 H330" marker-start="url(#nool-tagasi)" marker-end="url(#nool)"/>
+
   <rect x="40" y="236" width="220" height="92" rx="12" class="ext"/>
   <text x="58" y="262" class="lbl">Ajaserver</text>
   <text x="58" y="282" class="m11">cloudflare.com/cdn-cgi/trace</text>
@@ -87,9 +97,9 @@
 
   <rect x="330" y="236" width="230" height="92" rx="12" class="box"/>
   <text x="348" y="262" class="lbl">Kell ja režiim</text>
-  <text x="348" y="280" class="file">js/app.js</text>
+  <text x="348" y="280" class="file">js/app.js · js/sync.js</text>
   <text x="348" y="300" class="txt">automaatne: kellaaja järgi</text>
-  <text x="348" y="318" class="txt">või käsitsi valitud</text>
+  <text x="348" y="318" class="txt">või käsitsi (jagatud teistega)</text>
 
   <rect x="330" y="392" width="230" height="156" rx="12" class="box"/>
   <text x="348" y="418" class="lbl">Fooride juhtloogika</text>

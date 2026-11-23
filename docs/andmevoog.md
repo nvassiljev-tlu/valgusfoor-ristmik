@@ -9,7 +9,7 @@ plaadile USB kaudu, millised tema viiest tulest põlevad.
 
 | Samm | Kust → kuhu | Mis liigub | Millal |
 |---|---|---|---|
-| 1 | ajaserver → leht | HTTPS-vastuses rida `ts=1794916800.123` (Unix-aeg sekundites, siin 17.11.2026 kell 14:00 Eesti aja järgi) | üks kord lehe avamisel; kui internet ei vasta, kasutatakse arvuti kella |
+| 1 | ajaserver → leht | HTTPS-vastuses rida `ts=1794916800.123` (Unix-aeg sekundites, siin 17.11.2026 kell 14:00 Eesti aja järgi) | lehe avamisel ja iga 5 minuti tagant, iga kord 5 mõõtmist; kui internet ei vasta, kasutatakse arvuti kella |
 | 2 | kasutaja → leht | režiim: automaatne, hommik, päev, õhtu või öö | nupuvajutusel |
 | 3 | `junction.js` → juhtloogika | foorid, ülekäigud, vastuolulised suunad, faasid, režiimid, ajakava | lehe laadimisel |
 | 4 | kell → juhtloogika | soovitud režiim, nt `paev` | pidevalt; uus režiim hakkab kehtima ohutult pärast praegust faasi |
@@ -18,6 +18,7 @@ plaadile USB kaudu, millised tema viiest tulest põlevad.
 | 7 | leht → plaat (USB) | `KES?`, `MAARA:F3,U8`, `TULED:11010` | `KES?` ühendamisel; `MAARA` valiku muutmisel; `TULED` kohe muutusel, muidu iga 1 s |
 | 8 | plaat → leht (USB) | `READY`, `SEADE:…`, `OK …`, `VIGA …`, `RIKE` | käivitusel, vastusena käsule või rikke korral |
 | 9 | plaat → LED-id | viigud HIGH või LOW | kohe pärast käsku |
+| 10 | leht → relee → teised lehed | `reziim`, `tere`, `olek` (JSON, vt [Mitu arvutit](#mitu-arvutit)) | režiimi muutusel ja ruumiga liitumisel |
 
 ## Paketid
 
@@ -182,6 +183,64 @@ foorid kustuvad. Näide, kus „Öö“ valiti 100. sekundil vahetuse A → B aj
 Öörežiimi lõpus (kell 06:00) on sama jada mis lehe avamisel: 3 s kollane, 2 s kõik punased, faasi A
 fooridele 1 s punane + kollane ja siis roheline.
 
+## Mitu arvutit
+
+Lehe võib avada mitmes arvutis, igaühe küljes oma plaadid. Iga leht arvutab foorid ise, aga nii, et
+tulemus on kõigis arvutites igal hetkel sama:
+
+1. **Ühine kell.** Leht küsib aega internetist (cloudflare.com, varu time.now; oma relee korral
+   releelt) viis korda ja võtab kõige kiirema vastuse, nii et viga on alla poole päringu ajast,
+   tavaliselt ±10–30 ms. Aega küsitakse uuesti iga 5 minuti tagant. Väike parandus tehakse sujuvalt
+   (kuni 50 ms sekundis), et foorid ei hüppaks.
+2. **Ühine alguspunkt.** Foorid arvutatakse kohalikust südaööst alates ajakava järgi (südaööl on alati
+   öörežiim). Eri ajal avatud lehed on seega samas olekus ka ilma omavahelise ühenduseta.
+3. **Ühised käsud.** Režiimi muutus saadetakse relee kaudu kõigile sama ruumi lehtedele. Sõnumis on
+   hetk, millal muutus kehtima hakkab (1,5 s pärast klõpsu, et sõnum jõuaks kõigini), ja kontrolleri
+   olek sel hetkel. Nii jõuab ka hiljem liituv leht täpselt samasse olekusse.
+
+Relee on vaikimisi tasuta avalik [ntfy.sh](https://ntfy.sh) (HTTPS, teema nimi `ristmik-<ruumi kood>`,
+sõnumid on seal 12 tundi vahemälus). Teine võimalus on `node server/relay.js` ühes arvutis: sama API,
+lisaks annab see kellaaja (`/aeg`), nii et arvutid on samas taktis ka ilma internetita.
+
+| Sõnum | Millal | Sisu |
+|---|---|---|
+| `reziim` | kasutaja valis režiimi | kehtimise hetk, automaatne või käsitsi, režiim ja kontrolleri olek sel hetkel |
+| `tere` | leht liitus ruumiga | ainult saatja tunnus |
+| `olek` | vastus `tere`-le; vastab üks juba töötav leht | praegune hetk, režiim ja kontrolleri olek |
+
+Päris `reziim` sõnum (käsitsi öörežiim, kehtib 23.11.2026 kell 12:50:25,790; sel hetkel käib
+vahetus A → B, mis algas 12:50:22):
+
+```json
+{"v":1,"t":"reziim","id":"t9gtz1xjzdrm","from":"0q6o1cus683v","at":1795431025790.1,"auto":false,"mode":"oo",
+ "snap":{"wanted":"paev","mode":"paev","cycleStart":1795431002000,
+         "seg":{"type":"change","stage":0,"next":1,"start":1795431022000,"duration":8000}}}
+```
+
+```mermaid
+sequenceDiagram
+    participant A as Arvuti 1
+    participant R as Relee (ntfy.sh)
+    participant B as Arvuti 2
+    Note over A,B: mõlemad arvutavad foorid sama kella ja ajakava järgi
+    B->>R: tere
+    R-->>A: tere
+    A->>R: olek
+    R-->>B: olek
+    Note over B: võtab oleku üle
+    Note over A: kasutaja vajutab „Öö“
+    A->>R: reziim (öö, kehtib 1,5 s pärast)
+    R-->>B: reziim
+    Note over A,B: samal hetkel alustavad mõlemad üleminekut öörežiimile
+```
+
+- Plaatidele ei saadeta midagi enne, kui kell on sünkroniseeritud ja ruumi olek teada (kuni ~3 s
+  pärast lehe avamist). Seni vilgutavad plaadid kollast.
+- Kui relee ei vasta, on automaatrežiimis arvutid ikka samas taktis. Ühenduseta arvutis valitud
+  käsitsi režiim jääb aga ainult sellesse arvutisse.
+- Kui kaks arvutit valivad režiimi peaaegu korraga, jääb kehtima hilisem ja kõik arvutid jõuavad
+  samasse olekusse.
+
 ## Ajastus
 
 - Leht saadab muutused plaatidele iga 50 ms, nii et füüsiline foor jääb ekraanist maha kuni 50 ms
@@ -191,6 +250,7 @@ fooridele 1 s punane + kollane ja siis roheline.
   läinud rida ei sega.
 - Hoia leht esitluse ajal nähtaval. Kui vahekaart on peidus, aeglustab brauser lehe taimereid:
   muutused jõuavad plaatideni hiljem ja pikema aja jooksul võivad plaadid minna rikkerežiimi.
+- Mitme arvuti puhul lisandub kellade erinevus, tavaliselt alla 30 ms.
 
 ## Logi
 

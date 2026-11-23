@@ -198,6 +198,22 @@
       return { type: "stage", stage: k, start, duration: this.stageDuration(k) };
     }
 
+    // Kogu olek tavalise objektina, et teine arvuti saaks täpselt sama kontrolleri taastada
+    snapshot() {
+      const seg = { ...this.seg };
+      if (!isFinite(seg.duration)) seg.duration = null;
+      return { wanted: this.wanted, mode: this.mode, cycleStart: this.cycleStart, seg };
+    }
+
+    static restore(snap) {
+      const c = Object.create(Controller.prototype);
+      c.wanted = snap.wanted;
+      c.mode = snap.mode;
+      c.cycleStart = snap.cycleStart;
+      c.seg = { ...snap.seg, duration: snap.seg.duration === null ? Infinity : snap.seg.duration };
+      return c;
+    }
+
     states(now) {
       const t = now - this.seg.start;
       const st = statesIn(this.seg, t);

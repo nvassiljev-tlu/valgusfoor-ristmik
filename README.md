@@ -18,6 +18,30 @@ ESP8266 plaat on füüsiline foor, mis peegeldab ühte ristmiku foori – millis
    kaardil foori ja vajuta **„Näita seadmel N“**. Plaat jätab valiku meelde: pärast lehe uuesti
    laadimist või USB-st välja ja tagasi panemist näitab see sama foori.
 
+## Mitu arvutit
+
+Lehte võib avada mitmes arvutis korraga ja igaühe külge võib ühendada oma ESP8266 plaadid – kõik
+foorid on samas taktis.
+
+- Iga leht arvutab foorid internetist sünkroniseeritud kella järgi (viga tavaliselt alla 30 ms) ja
+  samast alguspunktist: kohalikust südaööst ajakava järgi (arvutite ajavöönd peab olema sama).
+  Automaatrežiimis on arvutid seega samas taktis ka ilma omavahelise ühenduseta.
+- Et ka käsitsi valitud režiim jõuaks kõigisse arvutitesse, ühenda need samasse **ruumi**: ühes
+  arvutis vajuta plokis **„Mitu arvutit“** nuppu **„Uus ruum“**, teises kirjuta sama kood ja vajuta
+  **„Ühenda“**. Režiimi muutus hakkab kõigis arvutites kehtima samal hetkel, 1,5 s pärast klõpsu.
+  Hiljem liituv või uuesti laaditud leht saab kohe sama oleku.
+- Sõnumid käivad tasuta avaliku relee [ntfy.sh](https://ntfy.sh) kaudu (vaja on internetti, töötab ka
+  eduroamis). Ruumi kood on nagu parool: kes seda teab, saab režiimi muuta.
+- Ilma internetita: käivita ühes arvutis `node server/relay.js` ja kirjuta kõigis arvutites väljale
+  „Relee“ aadress, mille see ekraanile kirjutab (nt `http://192.168.1.5:8090`). Arvutid peavad olema
+  samas võrgus, nt telefoni levialas; siis võetakse ka kellaaeg releelt.
+- Ava leht igas arvutis selle arvuti enda koopiast (topeltklõps või `localhost`). Teise arvuti
+  IP-aadressilt avatud lehel USB-ühendus ei tööta.
+
+Täpsemalt: [docs/andmevoog.md](docs/andmevoog.md#mitu-arvutit).
+
+## Plaadid
+
 Plaadi püsivara on `sketch_valgusfoor/sketch_valgusfoor.ino` (Arduino IDE, ESP8266 plaatide pakett,
 plaat nt „NodeMCU 1.0 (ESP-12E Module)“). LED-id: D3 autode punane, D4 autode kollane,
 D5 autode roheline, D1 jalakäijate punane, D2 jalakäijate roheline. Skeem ja komponendid:
@@ -52,10 +76,14 @@ Faasid (millised autode foorid on korraga rohelised):
 - `js/controller.js` – foorikontroller: faasid, vahetused, öörežiim, iga foori tulede olek
 - `js/map.js` – ristmiku kaart (skeem või foto), `js/timeline.js` – tsükli ajajoon
 - `js/devices.js` – USB-side ESP8266 plaatidega
+- `js/sync.js` – mitu arvutit: ühine kell, ühine ajajoon ja režiimi muutuste jagamine
 - `js/app.js` – lehe loogika
+- `server/relay.js` – oma sõnumirelee, kui ntfy.sh-d kasutada ei saa
 - `test/safety.test.js` – ohutustest: simuleerib 6 tundi juhuslike režiimivahetustega ja kontrollib,
   et vastuolulised suunad ei saa kunagi korraga rohelist
 - `test/devices.test.js` – USB-side test võltsitud plaadiga
+- `test/sync.test.js` – mitme arvuti test: simuleeritud lehed peavad igal hetkel samu tulesid näitama
+- `test/relay.test.js` – sama päris releega (`server/relay.js`) üle HTTP
 - `sketch_valgusfoor/` – ESP8266 püsivara
 - `docs/elektriskeem.md` – elektriskeem ja komponendid
 - `docs/andmevoog.md` – andmete liikumise skeem ja pakettide näited
@@ -68,6 +96,14 @@ node test/safety.test.js
 
 ```bash
 node test/devices.test.js
+```
+
+```bash
+node test/sync.test.js
+```
+
+```bash
+node test/relay.test.js
 ```
 
 ## Side lehe ja plaadi vahel
